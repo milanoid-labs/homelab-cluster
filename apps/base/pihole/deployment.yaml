@@ -59,6 +59,8 @@ spec:
               add:
                 - SYS_TIME
                 - SYS_NICE
+              drop:
+                - NET_RAW
       volumes:
         - name: pihole-data
           persistentVolumeClaim:
