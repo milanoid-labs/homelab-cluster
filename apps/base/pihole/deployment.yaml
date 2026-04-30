@@ -24,7 +24,7 @@ spec:
           - 8.8.8.8
       containers:
         - name: pihole
-          image: pihole/pihole:2026.04.1
+          image: pihole/pihole:2026.04.1@sha256:0b26b891bddc2af2cea282201d47ad92e54a53d4dd45d52e377600434d3ebb47
           ports:
             - containerPort: 53
               protocol: TCP
@@ -54,7 +54,7 @@ spec:
               readOnly: true
           securityContext:
             allowPrivilegeEscalation: false
-            runAsUser: 0
+            runAsUser: 0  # FTL manages /etc/pihole ownership and internal processes; pihole/pihole does not support non-root
             capabilities:
               add:
                 - SYS_TIME
