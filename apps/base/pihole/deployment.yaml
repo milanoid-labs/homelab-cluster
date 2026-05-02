@@ -1,0 +1,70 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pihole
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: pihole
+  template:
+    metadata:
+      labels:
+        app: pihole
+    spec:
+      nodeSelector:
+        kubernetes.io/hostname: hpmini02
+      dnsPolicy: None
+      dnsConfig:
+        nameservers:
+          - 127.0.0.1
+          - 8.8.8.8
+      containers:
+        - name: pihole
+          image: pihole/pihole:2026.04.1@sha256:0b26b891bddc2af2cea282201d47ad92e54a53d4dd45d52e377600434d3ebb47
+          ports:
+            - containerPort: 53
+              protocol: TCP
+              name: dns-tcp
+            - containerPort: 53
+              protocol: UDP
+              name: dns-udp
+            - containerPort: 80
+              protocol: TCP
+              name: http
+          env:
+            - name: TZ
+              value: Europe/Prague
+            - name: FTLCONF_dns_upstreams
+              value: "tls://1.1.1.1;tls://1.0.0.1"
+            - name: WEBPASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: pihole-password
+                  key: password
+          volumeMounts:
+            - name: pihole-data
+              mountPath: /etc/pihole
+            - name: dnsmasq-custom
+              mountPath: /etc/dnsmasq.d/99-custom.conf
+              subPath: 99-custom.conf
+              readOnly: true
+          securityContext:
+            allowPrivilegeEscalation: false
+            runAsUser: 0  # FTL manages /etc/pihole ownership and internal processes; pihole/pihole does not support non-root
+            capabilities:
+              add:
+                - SYS_TIME
+                - SYS_NICE
+              drop:
+                - NET_RAW
+      volumes:
+        - name: pihole-data
+          persistentVolumeClaim:
+            claimName: pihole
+        - name: dnsmasq-custom
+          configMap:
+            name: pihole-dnsmasq-custom
