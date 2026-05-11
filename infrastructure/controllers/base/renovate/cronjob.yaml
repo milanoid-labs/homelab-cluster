@@ -41,7 +41,7 @@ spec:
 
           containers:
             - name: renovate
-              image: renovate/renovate:43.160.7@sha256:fe98b7377d30a9e928f16df9453c2108856a27bc37c9dc0b260ba26f46011acc
+              image: renovate/renovate:43.170.22@sha256:d7f5f6e33846b8171881b72070d5efa3e02ca87164d2c8436afa23efe1d46a37
               command: ["/bin/sh", "-c"]
               args:
                 - export RENOVATE_TOKEN=$(cat /shared/token) && renovate milanoid-labs/homelab-cluster
