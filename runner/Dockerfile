@@ -9,6 +9,8 @@ RUN ARCH=$(dpkg --print-architecture) \
     && dpkg -i /tmp/gh.deb \
     && rm /tmp/gh.deb
 
+# dirmngr is required by sonarqube-scan-action v8+ which verifies the
+# scanner binary signature via GPG keyserver lookups before running.
 RUN apt-get update \
     && apt-get install -y --no-install-recommends dirmngr \
     && rm -rf /var/lib/apt/lists/*
