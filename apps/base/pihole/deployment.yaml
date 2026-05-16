@@ -40,6 +40,8 @@ spec:
               value: Europe/Prague
             - name: FTLCONF_dns_upstreams
               value: "1.1.1.1;1.0.0.1"
+            - name: FTLCONF_dns_listeningMode
+              value: "ALL"
             - name: WEBPASSWORD
               valueFrom:
                 secretKeyRef:
