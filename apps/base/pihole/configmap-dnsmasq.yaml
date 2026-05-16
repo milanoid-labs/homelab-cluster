@@ -1,0 +1,8 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: pihole-dnsmasq-custom
+data:
+  99-custom.conf: |
+    dns-forward-max=300
