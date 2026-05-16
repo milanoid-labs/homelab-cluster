@@ -1,0 +1,29 @@
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: headlamp-readonly
+rules:
+  - apiGroups: [""]
+    resources:
+      - nodes
+      - namespaces
+      - pods
+      - services
+      - endpoints
+      - persistentvolumes
+      - persistentvolumeclaims
+      - resourcequotas
+      - limitranges
+      - events
+      - serviceaccounts
+    verbs: [get, list, watch]
+  - apiGroups: [apps]
+    resources: [deployments, replicasets, daemonsets, statefulsets]
+    verbs: [get, list, watch]
+  - apiGroups: [networking.k8s.io]
+    resources: [ingresses, ingressclasses]
+    verbs: [get, list, watch]
+  - apiGroups: [metrics.k8s.io]
+    resources: [nodes, pods]
+    verbs: [get, list]

@@ -1,0 +1,72 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cloudflared
+spec:
+  selector:
+    matchLabels:
+      app: cloudflared
+  replicas: 2
+  template:
+    metadata:
+      labels:
+        app: cloudflared
+    spec:
+      containers:
+        - name: cloudflared
+          image: cloudflare/cloudflared:2026.5.0@sha256:59bab8d3aceec09bf6bdb07d6beca0225ca5cd7ab79436a87ea97978fe1dc4f9
+          args:
+            - tunnel
+            - --config
+            - /etc/cloudflared/config/config.yaml
+            - run
+          ports:
+            - containerPort: 2000
+              name: metrics
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /ready
+              port: 2000
+            failureThreshold: 1
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          volumeMounts:
+            - name: config
+              mountPath: /etc/cloudflared/config
+              readOnly: true
+            - name: creds
+              mountPath: /etc/cloudflared/creds
+              readOnly: true
+      volumes:
+        - name: creds
+          secret:
+            secretName: headlamp-tunnel-credentials
+        - name: config
+          configMap:
+            name: cloudflared
+            items:
+              - key: config.yaml
+                path: config.yaml
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cloudflared
+data:
+  config.yaml: |
+    tunnel: headlamp
+
+    credentials-file: /etc/cloudflared/creds/credentials.json
+
+    metrics: 0.0.0.0:2000
+    no-autoupdate: true
+
+    ingress:
+    - hostname: headlamp.milanoid.net
+      service: http://headlamp:4466
+
+    - hostname: hello.example.com
+      service: hello_world
+    - service: http_status:404
