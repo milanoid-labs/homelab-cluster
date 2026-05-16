@@ -5,6 +5,7 @@ metadata:
   name: pihole
   namespace: pihole
 spec:
+  storageClassName: local-path
   accessModes:
     - ReadWriteOnce
   resources:
