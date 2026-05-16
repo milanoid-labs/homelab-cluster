@@ -6,6 +6,7 @@ metadata:
   namespace: pihole
 spec:
   storageClassName: local-path
+  volumeName: pvc-34bc9bac-77b1-4421-88fe-d32a5feaf3a4
   accessModes:
     - ReadWriteOnce
   resources:
