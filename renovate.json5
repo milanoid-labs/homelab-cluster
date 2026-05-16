@@ -49,15 +49,21 @@
       matchPackageNames: [
         'renovate/renovate',
       ],
-      schedule: ['before 9am on monday'],
+      schedule: [
+        'before 9am on monday',
+      ],
       automerge: true,
     },
     {
-      matchPackagePatterns: ['^ghcr\\.io/hotio/'],
       versioning: 'regex:^release-(?<major>\\d+)\\.(?<minor>\\d+)\\.(?<patch>\\d+)(\\.(?<build>\\d+))?$',
+      matchPackageNames: [
+        '/^ghcr\\.io/hotio//',
+      ],
     },
     {
-      matchPackageNames: ['linuxserver/qbittorrent'],
+      matchPackageNames: [
+        'linuxserver/qbittorrent',
+      ],
       versioning: 'loose',
     },
   ],
