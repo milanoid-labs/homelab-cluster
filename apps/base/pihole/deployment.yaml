@@ -24,7 +24,7 @@ spec:
           - 8.8.8.8
       containers:
         - name: pihole
-          image: pihole/pihole:2026.04.1@sha256:0b26b891bddc2af2cea282201d47ad92e54a53d4dd45d52e377600434d3ebb47
+          image: pihole/pihole:2026.04.1@sha256:1c32c36b862a12762656b6471c854cebc01fe945639ba3a893611337c2c95e99
           ports:
             - containerPort: 53
               protocol: TCP
