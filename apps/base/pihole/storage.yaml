@@ -6,6 +6,8 @@ metadata:
   namespace: pihole
 spec:
   storageClassName: local-path
+  # Pinned to preserve existing data. To find the current value: kubectl get pvc pihole -n pihole -o jsonpath='{.spec.volumeName}'
+  volumeName: pvc-34bc9bac-77b1-4421-88fe-d32a5feaf3a4
   accessModes:
     - ReadWriteOnce
   resources:
