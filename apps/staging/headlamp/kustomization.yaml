@@ -5,5 +5,4 @@ namespace: headlamp
 resources:
   - ../../base/headlamp
   - cloudflare.yaml
-  - headlamp-secrets.yaml
   - headlamp-tunnel-credentials.yaml
