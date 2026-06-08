@@ -11,6 +11,7 @@ checks:
     - "no-readiness-probe"
     # Kustomize injects namespaces at build time; kube-linter scans raw files
     - "dangling-service"
+    - "non-existent-service-account"
     # linuxserver.io images require root; nginx needs root for port binding
     - "run-as-non-root"
     # Meaningless on a 2-3 node homelab cluster

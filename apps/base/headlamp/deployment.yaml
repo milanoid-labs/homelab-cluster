@@ -1,0 +1,38 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: headlamp
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: headlamp
+  template:
+    metadata:
+      labels:
+        app: headlamp
+    spec:
+      serviceAccountName: headlamp
+      containers:
+        - name: headlamp
+          image: ghcr.io/headlamp-k8s/headlamp:v0.26.0@sha256:7a3d7c3ab54d30e1ea2becc0b61e1498b07ad37707148da46c71281e779bdfc0
+          args: ["--in-cluster", "--port=4466"]
+          env:
+            - name: HEADLAMP_BACKEND_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: headlamp-token
+                  key: token
+          ports:
+            - containerPort: 4466
+          resources:
+            requests:
+              cpu: "50m"
+              memory: "128Mi"
+            limits:
+              cpu: "500m"
+              memory: "256Mi"
+          securityContext:
+            allowPrivilegeEscalation: false
+            runAsUser: 100
