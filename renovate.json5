@@ -25,6 +25,15 @@
   ],
   packageRules: [
     {
+      matchPackageNames: [
+        'ghcr.io/milanoid-labs/homelab-runner',
+      ],
+      matchUpdateTypes: [
+        'digest',
+      ],
+      automerge: true,
+    },
+    {
       matchUpdateTypes: [
         'digest',
       ],
