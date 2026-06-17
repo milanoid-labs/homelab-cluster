@@ -16,7 +16,7 @@ spec:
       serviceAccountName: headlamp
       containers:
         - name: headlamp
-          image: ghcr.io/headlamp-k8s/headlamp:v0.43.0@sha256:b068ecfb496a50b837990e60391d5ffba9f3f2c0dafdb6bcdf681410eb776018
+          image: ghcr.io/headlamp-k8s/headlamp:v0.43.0@sha256:3b5482c0af7edf93c8b4cd21af450506c74d1098f642eeaf287ebba43689d729
           args: ["--in-cluster", "--port=4466"]
           env:
             - name: HEADLAMP_BACKEND_TOKEN
