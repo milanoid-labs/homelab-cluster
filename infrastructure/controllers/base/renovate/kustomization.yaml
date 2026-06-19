@@ -6,4 +6,5 @@ resources:
   - configmap.yaml
   - cronjob.yaml
   - renovate-container-env.yaml
+  - renovate-nexus-env.yaml
   - mint-token-script.yaml

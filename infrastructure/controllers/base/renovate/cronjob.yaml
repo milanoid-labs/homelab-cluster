@@ -49,6 +49,12 @@ spec:
               envFrom:
                 - configMapRef:
                     name: renovate-configmap
+              env:
+                - name: RENOVATE_HOST_RULES
+                  valueFrom:
+                    secretKeyRef:
+                      name: renovate-nexus-env
+                      key: RENOVATE_HOST_RULES
               volumeMounts:
                 - name: shared
                   mountPath: /shared
