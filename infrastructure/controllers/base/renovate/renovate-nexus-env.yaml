@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: Secret
+metadata:
+    name: renovate-nexus-env
+    namespace: renovate
+stringData:
+    RENOVATE_HOST_RULES: ENC[AES256_GCM,data:WprlMXeMb5KoAHjxPklEiFktJ3ffvet/63SSDdpwc4hjXy/A3Kfn+CHYgKj+hcTs244dyf04azwcV0KE1yGldv/AhSYcHtYFvAbrD9eoPx5kHpZAMF6DasRkgLcP++AvvnGOLwZFt+n1NbmZAzMcYsI=,iv:1N+lWDBiQEOwZoQ3iY3BU+5tX4BoTxyYVZLpL9ZttLs=,tag:tOq7OFGDOgaeK2R4Sg95mA==,type:str]
+sops:
+    age:
+        - enc: |
+            -----BEGIN AGE ENCRYPTED FILE-----
+            YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBzdkptYUYrTTl2MUcwQjYx
+            eUZrWnJYNzZvS1M0Y1RHK2R0SzV1dkxXNzBBCm5XWXpsV1AvbDdkTW1sVGd1VUNu
+            cTlLOXl5S0NmazBJeURCalNaV0ZDV1kKLS0tIFl3anNVOThaNnZnVnFlQkNIMC9u
+            Vkp1SFhIZGdISkFCeFBTdFc4OEE3Y00KombL4shzxEChxIqp3rHONz9e67uhKwnz
+            yHqt+l78Ay9w9iC4/tWd8TJLQY4gdIQpCYv2oRmCoFMJPSF0lzws3Q==
+            -----END AGE ENCRYPTED FILE-----
+          recipient: age1jnfhet7cj900tg9f0dwgqktjwux4km4hen8gnevpujm5260sayesujm92y
+    encrypted_regex: ^(data|stringData)$
+    lastmodified: "2026-06-19T16:50:48Z"
+    mac: ENC[AES256_GCM,data:3JMj2FQuZ3Zm+2t+I/2Itni0GF1p1x1Ya10O36Ht8Twwf0yZSTjCtR8ni2SHWX6MdlrpevhmW0t57N1TCLQpuLWDigbHnes6lZvCwNESYAJxB9sCF2X64NZ0iM1qUhKXASMNM0mHKRdKb9ISfwxyPz7tYebw+5pGkjZHZGe3qH0=,iv:sEhemFjgyBqDpwYPI5O51u202ADNMo1PpWOUX2/U7pM=,tag:feNiqEOgmYAHRqtAl73pqA==,type:str]
+    version: 3.13.1

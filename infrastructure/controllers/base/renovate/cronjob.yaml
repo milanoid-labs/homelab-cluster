@@ -53,7 +53,7 @@ spec:
                 - name: RENOVATE_HOST_RULES
                   valueFrom:
                     secretKeyRef:
-                      name: renovate-container-env
+                      name: renovate-nexus-env
                       key: RENOVATE_HOST_RULES
               volumeMounts:
                 - name: shared
