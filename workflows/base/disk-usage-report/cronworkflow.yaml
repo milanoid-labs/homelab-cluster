@@ -1,0 +1,40 @@
+---
+apiVersion: argoproj.io/v1alpha1
+kind: CronWorkflow
+metadata:
+  name: media-disk-usage-report
+spec:
+  schedule: "0 6 * * *"
+  concurrencyPolicy: Forbid
+  startingDeadlineSeconds: 300
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  workflowSpec:
+    entrypoint: report
+    ttlStrategy:
+      secondsAfterCompletion: 3600
+    templates:
+      - name: report
+        container:
+          image: busybox:1.37.0@sha256:7a3ebe5bfd1a4a19797d20b0c0bb39d44393e9a03fd852c0865b0f540d868df0
+          command: ["sh", "-c"]
+          args:
+            - |
+              echo "=== Disk usage per top-level folder ==="
+              du -sh /media/*/ 2>/dev/null | sort -rh
+              echo
+              echo "=== Overall volume usage ==="
+              df -h /media
+          volumeMounts:
+            - name: media
+              mountPath: /media
+              readOnly: true
+          securityContext:
+            allowPrivilegeEscalation: false
+            runAsNonRoot: true
+            runAsUser: 1000
+    volumes:
+      - name: media
+        persistentVolumeClaim:
+          claimName: synology-nfs-pvc
+          readOnly: true
