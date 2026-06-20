@@ -1,0 +1,17 @@
+---
+# RoleBinding (not ClusterRoleBinding) so the "admin" aggregated role -
+# which includes the workflow permissions cluster-install aggregates into
+# it - only applies within the argo namespace, not cluster-wide.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: argo-ui-admin
+  namespace: argo
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: admin
+subjects:
+  - kind: ServiceAccount
+    name: argo-ui
+    namespace: argo

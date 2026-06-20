@@ -2,6 +2,9 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
   - namespace.yaml
+  - ui-serviceaccount.yaml
+  - ui-rolebinding.yaml
+  - ui-token-secret.yaml
   # the // separates the repo root from the path inside it, per kustomize's git-URL convention
   # pinned to the commit for tag v4.0.6 (tags are mutable refs, commits aren't)
   - github.com/argoproj/argo-workflows//manifests/cluster-install?ref=277e9cef0ad16d7eaaab253573d0695951a65dbd
