@@ -4,6 +4,7 @@ resources:
   - namespace.yaml
   - ui-serviceaccount.yaml
   - ui-rolebinding.yaml
+  - ui-clusterrolebinding.yaml
   - ui-token-secret.yaml
   # the // separates the repo root from the path inside it, per kustomize's git-URL convention
   # pinned to the commit for tag v4.0.6 (tags are mutable refs, commits aren't)
