@@ -1,7 +1,9 @@
 ---
 # cluster-wide read access so the UI's default "all namespaces" workflow
 # list works; write/admin actions stay scoped to the argo namespace via
-# ui-rolebinding.yaml
+# ui-rolebinding.yaml. argo-aggregate-to-view (shipped by cluster-install)
+# is scoped to just the argoproj.io CRDs, unlike the built-in "view" role
+# which would also grant read on Pods/ConfigMaps/Services etc. everywhere.
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
@@ -9,7 +11,7 @@ metadata:
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: view
+  name: argo-aggregate-to-view
 subjects:
   - kind: ServiceAccount
     name: argo-ui
