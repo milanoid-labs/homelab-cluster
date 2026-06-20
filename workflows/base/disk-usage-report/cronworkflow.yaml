@@ -12,6 +12,7 @@ spec:
   failedJobsHistoryLimit: 3
   workflowSpec:
     entrypoint: report
+    serviceAccountName: disk-usage-report
     ttlStrategy:
       secondsAfterCompletion: 3600
     templates:
