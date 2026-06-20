@@ -6,7 +6,6 @@ resources:
   - linkding       # Comment out this line to exclude from deployment
   - webhosting     # Comment out this line to exclude from deployment
   - downloaders-pvc
-  - disk-usage-report
   - radarr
   - prowlarr
   - torrent-client

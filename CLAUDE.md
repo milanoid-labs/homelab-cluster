@@ -22,6 +22,7 @@ K3s Kubernetes homelab cluster managed via **GitOps with Flux CD**. All changes 
 | `infrastructure.yaml` | `./infrastructure/controllers/staging` | Controllers (Renovate) |
 | `monitoring.yaml` | `./monitoring/` | kube-prometheus-stack (HelmRelease) |
 | `persistent-volumes.yaml` | `./persistent-volumes/staging` | NFS PV definitions |
+| `workflows.yaml` | `./workflows/staging` | Argo Workflows/CronWorkflows |
 
 All have `interval: 1m0s`, `prune: true`, and SOPS decryption enabled.
 
