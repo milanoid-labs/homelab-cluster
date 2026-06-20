@@ -24,7 +24,7 @@ K3s Kubernetes homelab cluster managed via **GitOps with Flux CD**. All changes 
 | `persistent-volumes.yaml` | `./persistent-volumes/staging` | NFS PV definitions |
 | `workflows.yaml` | `./workflows/staging` | Argo Workflows/CronWorkflows |
 
-All have `interval: 1m0s`, `prune: true`, and SOPS decryption enabled.
+All have `interval: 1m0s` and `prune: true`. Most also have SOPS decryption enabled, except `monitoring.yaml`'s `monitoring-controllers` Kustomization (no secrets needed there).
 
 ### Secrets Management
 
