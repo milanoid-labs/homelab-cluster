@@ -4,7 +4,8 @@ kind: CronWorkflow
 metadata:
   name: media-disk-usage-report
 spec:
-  schedule: "0 6 * * *"
+  schedules:
+    - "0 6 * * *"
   concurrencyPolicy: Forbid
   startingDeadlineSeconds: 300
   successfulJobsHistoryLimit: 3
