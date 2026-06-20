@@ -35,6 +35,8 @@ jobs:
       - name: Validate kustomize overlays
         run: |
           set -euo pipefail
+          build_file="$(mktemp /tmp/build-XXXXXX.yaml)"
+          trap 'rm -f "$build_file"' EXIT
           for overlay in \
             apps/staging \
             infrastructure/controllers/staging \
@@ -45,7 +47,6 @@ jobs:
             echo "--- Validating $overlay ---"
             # kubeconform mis-splits very large multi-doc YAML (e.g. Argo Workflows CRDs)
             # when reading from stdin, so build to a temp file and pass that instead.
-            build_file="$(mktemp /tmp/build-XXXXXX.yaml)"
             kustomize build --load-restrictor LoadRestrictionsNone "$overlay" > "$build_file"
             kubeconform \
               --ignore-missing-schemas \
