@@ -3,3 +3,4 @@ kind: Kustomization
 namespace: downloaders
 resources:
   - ../../base/disk-usage-report
+  - executor-rbac.yaml
