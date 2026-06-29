@@ -22,6 +22,18 @@
       registryUrlTemplate: 'https://ghcr.io',
       packageNameTemplate: 'actions/actions-runner-controller-charts/{{depName}}',
     },
+    {
+      customType: 'regex',
+      managerFilePatterns: [
+        '/infrastructure/k3s-upgrade-plans/plans\\.yaml/',
+      ],
+      matchStrings: [
+        'version: (?<currentValue>v[^\\n]+)',
+      ],
+      depNameTemplate: 'k3s-io/k3s',
+      datasourceTemplate: 'github-releases',
+      versioningTemplate: 'regex:^v(?<major>\\d+)\\.(?<minor>\\d+)\\.(?<patch>\\d+)\\+k3s(?<build>\\d+)$',
+    },
   ],
   packageRules: [
     {
@@ -53,6 +65,17 @@
         'actions/actions-runner-controller-charts/**',
       ],
       pinDigests: false,
+    },
+    {
+      matchManagers: ['custom.regex'],
+      matchPackageNames: ['k3s-io/k3s'],
+      pinDigests: false,
+      groupName: 'k3s upgrade',
+    },
+    {
+      matchManagers: ['kubernetes'],
+      matchPackageNames: ['rancher/k3s-upgrade'],
+      groupName: 'k3s upgrade',
     },
     {
       matchPackageNames: [
