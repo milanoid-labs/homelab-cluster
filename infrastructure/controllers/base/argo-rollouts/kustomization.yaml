@@ -1,0 +1,14 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - namespace.yaml
+  # pinned to the commit for tag v1.8.3 (tags are mutable refs, commits aren't)
+  - github.com/argoproj/argo-rollouts//manifests/cluster-install?ref=49fa1516cf71672b69e265267da4e1d16e1fe114
+  - https://raw.githubusercontent.com/argoproj/argo-rollouts/49fa1516cf71672b69e265267da4e1d16e1fe114/manifests/dashboard-install.yaml
+images:
+  - name: quay.io/argoproj/argo-rollouts
+    newTag: v1.8.3
+    digest: sha256:7e35af392d77eeb16488570d87a8af9e19879ae6328736172499815cc2a56c8c
+  - name: quay.io/argoproj/kubectl-argo-rollouts
+    newTag: v1.8.3
+    digest: sha256:f60f0eec76b35f7e21c10c8dd35b49c9108cd96a19e94b5056ee17765ca5ef48
