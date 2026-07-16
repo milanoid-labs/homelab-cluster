@@ -7,4 +7,5 @@ resources:
   - arc-runners
   - argocd
   - argo-workflows
+  - argo-rollouts
   - system-upgrade-controller
