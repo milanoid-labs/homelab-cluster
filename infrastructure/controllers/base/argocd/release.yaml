@@ -24,6 +24,7 @@ spec:
   values:
     configs:
       cm:
+        ui.bannercontent: "Hello Milanoid!"
         timeout.reconciliation: 180s
         statusbadge.enabled: "true"
       params:
