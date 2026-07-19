@@ -6,6 +6,6 @@ metadata:
 spec:
   ports:
     - port: 80
-      targetPort: 22112
+      targetPort: 8080
   selector:
     app: canary-demo
