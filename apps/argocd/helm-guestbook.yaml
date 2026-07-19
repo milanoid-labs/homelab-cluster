@@ -12,6 +12,10 @@ spec:
     repoURL: https://github.com/argoproj/argocd-example-apps.git
     targetRevision: HEAD
     path: helm-guestbook
+    helm:
+      # ovverride default Helm Values
+      valuesObject:
+        replicaCount: 3
   destination:
     server: https://kubernetes.default.svc
     namespace: helm-guestbook
