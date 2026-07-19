@@ -1,0 +1,21 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: devops-study-app
+spec:
+  replicas: 2
+  revisionHistoryLimit: 3
+  selector:
+    matchLabels:
+      app: devops-study-app
+  template:
+    metadata:
+      labels:
+        app: devops-study-app
+    spec:
+      containers:
+        - image: gcr.io/milanoid-labs/study-app-api:backend-v0.2.3
+          name: devops-study-app-backend
+          ports:
+            - containerPort: 22112

@@ -1,0 +1,24 @@
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: devops-study-app
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/milanoid-labs/homelab-cluster.git
+    targetRevision: HEAD
+    path: apps/argocd/devops-study-app
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: devops-study-app
+  syncPolicy:
+    automated:
+      enabled: true
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
