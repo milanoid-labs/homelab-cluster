@@ -3,6 +3,7 @@
   extends: [
     'config:best-practices',
   ],
+  osvVulnerabilityAlerts: true,
   kubernetes: {
     managerFilePatterns: [
       '/\\.yaml$/',
