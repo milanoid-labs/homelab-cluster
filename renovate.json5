@@ -8,21 +8,18 @@
       '/\\.yaml$/',
     ],
   },
+  // The flux manager defaults to **/gotk-components.yaml only, which left every
+  // HelmRelease chart version unmanaged. Widen it like the kubernetes manager above so
+  // chart bumps are raised too; repo-wide matching also lets Renovate resolve a
+  // HelmRelease's sourceRef to a HelmRepository declared in a different directory.
+  flux: {
+    managerFilePatterns: [
+      '/\\.yaml$/',
+    ],
+  },
   pinDigests: true,
   minimumReleaseAge: '3 days',
   customManagers: [
-    {
-      customType: 'regex',
-      managerFilePatterns: [
-        '/infrastructure/controllers/base/arc-.+/release\\.yaml/',
-      ],
-      matchStrings: [
-        'chart: (?<depName>[\\w-]+)\\s+version: "(?<currentValue>[^"]+)"',
-      ],
-      datasourceTemplate: 'docker',
-      registryUrlTemplate: 'https://ghcr.io',
-      packageNameTemplate: 'actions/actions-runner-controller-charts/{{depName}}',
-    },
     {
       customType: 'regex',
       managerFilePatterns: [
@@ -59,13 +56,16 @@
       pinDigests: false,
     },
     {
+      // The ARC controller and the runner scale set share a version and must move
+      // together, so keep them in a single PR. The flux manager picks them up natively
+      // from the oci-type HelmRepository in arc-controller/repository.yaml.
       matchManagers: [
-        'custom.regex',
+        'flux',
       ],
       matchPackageNames: [
-        'actions/actions-runner-controller-charts/**',
+        'ghcr.io/actions/actions-runner-controller-charts/**',
       ],
-      pinDigests: false,
+      groupName: 'arc',
     },
     {
       // argo-workflows is referenced by two kustomize git refs (crds/minimal and
