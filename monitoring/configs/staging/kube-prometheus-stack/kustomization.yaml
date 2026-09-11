@@ -4,3 +4,4 @@ kind: Kustomization
 resources:
   - grafana-tls-secret.yaml
   - grafana-admin-secret.yaml
+  - node-exporter-tls-secret.yaml
