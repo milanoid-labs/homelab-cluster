@@ -51,6 +51,11 @@ spec:
               resources:
                 requests:
                   storage: 8Gi
+      ingress:
+        enabled: true
+        ingressClassName: traefik
+        hosts:
+          - prometheus.milanoid.net
     alertmanager:
       alertmanagerSpec:
         resources:
