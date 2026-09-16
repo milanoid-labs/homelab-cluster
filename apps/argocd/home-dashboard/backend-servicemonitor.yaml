@@ -1,0 +1,15 @@
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: home-dashboard-backend
+  labels:
+    release: kube-prometheus-stack
+spec:
+  selector:
+    matchLabels:
+      app: home-dashboard-backend
+  endpoints:
+    - port: prometheus-metrics
+      path: /
+      interval: 30s
