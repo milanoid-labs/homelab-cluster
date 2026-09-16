@@ -8,10 +8,10 @@ metadata:
 spec:
   ports:
     - port: 80
-      name: home-dashboard-backend
+      name: http
       targetPort: 8001
     - port: 8000
-      name: prometheus-metrics
+      name: metrics
       targetPort: 8000
   selector:
     app: home-dashboard-backend

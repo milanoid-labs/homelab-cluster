@@ -10,6 +10,6 @@ spec:
     matchLabels:
       app: home-dashboard-backend
   endpoints:
-    - port: prometheus-metrics
+    - port: metrics
       path: /
       interval: 30s
