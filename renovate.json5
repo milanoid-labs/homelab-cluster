@@ -115,5 +115,18 @@
       ],
       versioning: 'loose',
     },
+    {
+      // home-dashboard's images are tagged "backend-vX.Y.Z" / "frontend-vX.Y.Z"
+      // (release-please's include-component-in-tag) and study-app-api uses
+      // "backend-vX.Y.Z" too. Not bare semver, so the default docker versioning
+      // can't parse them and silently never reports an update (same issue
+      // already fixed above for ghcr.io/hotio/*).
+      versioning: 'regex:^(backend|frontend)-v(?<major>\\d+)\\.(?<minor>\\d+)\\.(?<patch>\\d+)$',
+      matchPackageNames: [
+        'ghcr.io/milanoid-labs/home-dashboard-api',
+        'ghcr.io/milanoid-labs/home-dashboard-web',
+        'ghcr.io/milanoid-labs/study-app-api',
+      ],
+    },
   ],
 }
