@@ -2,7 +2,7 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: home-dashboard-frontend
+  name: home-dashboard
 spec:
   ingressClassName: traefik
   rules:
@@ -17,5 +17,15 @@ spec:
                 name: home-dashboard-frontend
                 port:
                   number: 80
+            path: /
+            pathType: Prefix
+    - host: metrics.home-dashboard.milanoid.net
+      http:
+        paths:
+          - backend:
+              service:
+                name: home-dashboard-backend
+                port:
+                  number: 8000
             path: /
             pathType: Prefix
