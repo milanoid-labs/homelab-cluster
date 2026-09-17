@@ -14,18 +14,15 @@ spec:
         paths:
           - backend:
               service:
-                name: home-dashboard-frontend
-                port:
-                  number: 80
-            path: /
-            pathType: Prefix
-    - host: metrics.home-dashboard.milanoid.net
-      http:
-        paths:
-          - backend:
-              service:
                 name: home-dashboard-backend
                 port:
                   number: 8000
+            path: /metrics
+            pathType: Prefix
+          - backend:
+              service:
+                name: home-dashboard-frontend
+                port:
+                  number: 80
             path: /
             pathType: Prefix

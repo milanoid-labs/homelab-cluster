@@ -7,6 +7,6 @@ resources:
   - backend-servicemonitor.yaml
   - frontend-deployment.yaml
   - frontend-service.yaml
-  - frontend-ingress.yaml
+  - ingress.yaml
 generators:
   - ksops-generator.yaml
