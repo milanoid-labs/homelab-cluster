@@ -11,5 +11,5 @@ spec:
       app: home-dashboard-backend
   endpoints:
     - port: metrics
-      path: /
+      path: /metrics
       interval: 30s
