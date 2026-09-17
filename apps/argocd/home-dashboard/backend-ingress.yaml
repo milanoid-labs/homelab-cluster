@@ -17,5 +17,5 @@ spec:
                 name: home-dashboard-backend
                 port:
                   number: 8000
-            path: /
+            path: /metrics
             pathType: Prefix
