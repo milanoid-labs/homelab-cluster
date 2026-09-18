@@ -19,6 +19,7 @@
   },
   pinDigests: true,
   minimumReleaseAge: '3 days',
+  semanticCommitType: 'fix',
   customManagers: [
     {
       customType: 'regex',
