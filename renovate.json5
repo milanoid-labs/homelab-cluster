@@ -36,6 +36,18 @@
   ],
   packageRules: [
     {
+      // config:best-practices pulls in :semanticPrefixFixDepsChoreOthers, whose
+      // packageRules set semanticCommitType per-dependency and override our top-level
+      // 'fix' default above. That preset only maps npm's 'dependencies'/'require'
+      // depTypes (and Maven) to 'fix'; Docker deps get depType 'stage'/'final' and fall
+      // through to its catch-all 'chore' rule. Our own rule here is applied after the
+      // preset's and wins, so Docker image/tag/digest bumps land as fix(deps) too.
+      matchDatasources: [
+        'docker',
+      ],
+      semanticCommitType: 'fix',
+    },
+    {
       matchPackageNames: [
         'ghcr.io/milanoid-labs/homelab-runner',
       ],
