@@ -1,0 +1,30 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pushgateway
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: pushgateway
+  template:
+    metadata:
+      labels:
+        app: pushgateway
+    spec:
+      containers:
+        - name: pushgateway
+          image: prom/pushgateway:v1.11.1@sha256:5676c07ae311bebd6be781572d88de408fe4ebd69c8ccef7a7b1fce463b3e5f9
+          ports:
+            - containerPort: 9091
+              name: metrics
+          resources:
+            requests:
+              cpu: "10m"
+              memory: "32Mi"
+            limits:
+              memory: "64Mi"
+          securityContext:
+            allowPrivilegeEscalation: false
+            runAsUser: 65534  # nobody user baked into the image
