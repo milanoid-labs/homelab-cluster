@@ -46,6 +46,16 @@
         'docker',
       ],
       semanticCommitType: 'fix',
+      // The Docker datasource only gets a releaseTimestamp from Docker Hub's
+      // tag_last_pushed field; every other registry (ghcr.io included) never gets one.
+      // minimumReleaseAgeBehaviour defaults to 'timestamp-required', which treats a
+      // missing timestamp as permanently pending -- so with minimumReleaseAge set
+      // below, every non-Docker-Hub image (all our ghcr.io/* deps) silently never got
+      // its first branch/PR created, no matter how old the release actually was.
+      // 'timestamp-optional' keeps the age gate where Renovate can actually check it
+      // (Docker Hub) and lets everything else through immediately instead of hanging
+      // forever.
+      minimumReleaseAgeBehaviour: 'timestamp-optional',
     },
     {
       matchPackageNames: [
