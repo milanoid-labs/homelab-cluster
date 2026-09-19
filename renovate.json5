@@ -20,6 +20,9 @@
   pinDigests: true,
   minimumReleaseAge: '3 days',
   semanticCommitType: 'fix',
+  // Default is 2/hour, which throttles a single daily run hard enough that most
+  // dependencies queue for days behind whichever branches happen to process first.
+  prHourlyLimit: 10,
   customManagers: [
     {
       customType: 'regex',
