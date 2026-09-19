@@ -20,9 +20,10 @@ jobs:
         run: yamllint -c .yamllint.yaml .
       - name: Push metrics to Pushgateway
         if: always()
+        continue-on-error: true
         run: |
           apk add --no-cache curl
-          cat <<EOF | curl --silent --show-error -X PUT --data-binary @- \
+          cat <<EOF | curl --silent --show-error --fail --max-time 10 -X PUT --data-binary @- \
             http://pushgateway.pushgateway.svc.cluster.local:9091/metrics/job/ci/instance/yaml-lint
           # TYPE github_actions_job_success gauge
           github_actions_job_success ${{ job.status == 'success' && '1' || '0' }}
@@ -68,8 +69,9 @@ jobs:
           done
       - name: Push metrics to Pushgateway
         if: always()
+        continue-on-error: true
         run: |
-          cat <<EOF | curl --silent --show-error -X PUT --data-binary @- \
+          cat <<EOF | curl --silent --show-error --fail --max-time 10 -X PUT --data-binary @- \
             http://pushgateway.pushgateway.svc.cluster.local:9091/metrics/job/ci/instance/kubeconform
           # TYPE github_actions_job_success gauge
           github_actions_job_success ${{ job.status == 'success' && '1' || '0' }}
@@ -110,8 +112,9 @@ jobs:
           exit $status
       - name: Push metrics to Pushgateway
         if: always()
+        continue-on-error: true
         run: |
-          cat <<EOF | curl --silent --show-error -X PUT --data-binary @- \
+          cat <<EOF | curl --silent --show-error --fail --max-time 10 -X PUT --data-binary @- \
             http://pushgateway.pushgateway.svc.cluster.local:9091/metrics/job/ci/instance/k3s-plan-consistency
           # TYPE github_actions_job_success gauge
           github_actions_job_success ${{ job.status == 'success' && '1' || '0' }}
@@ -131,8 +134,9 @@ jobs:
           config: .kube-linter.yaml
       - name: Push metrics to Pushgateway
         if: always()
+        continue-on-error: true
         run: |
-          cat <<EOF | curl --silent --show-error -X PUT --data-binary @- \
+          cat <<EOF | curl --silent --show-error --fail --max-time 10 -X PUT --data-binary @- \
             http://pushgateway.pushgateway.svc.cluster.local:9091/metrics/job/ci/instance/kube-linter
           # TYPE github_actions_job_success gauge
           github_actions_job_success ${{ job.status == 'success' && '1' || '0' }}
