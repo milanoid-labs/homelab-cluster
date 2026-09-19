@@ -18,6 +18,18 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
       - name: Run yamllint
         run: yamllint -c .yamllint.yaml .
+      - name: Push metrics to Pushgateway
+        if: always()
+        continue-on-error: true
+        run: |
+          apk add --no-cache curl
+          cat <<EOF | curl --silent --show-error --fail --max-time 10 -X PUT --data-binary @- \
+            http://pushgateway.pushgateway.svc.cluster.local:9091/metrics/job/ci/instance/yaml-lint
+          # TYPE github_actions_job_success gauge
+          github_actions_job_success ${{ job.status == 'success' && '1' || '0' }}
+          # TYPE github_actions_job_last_run_timestamp_seconds gauge
+          github_actions_job_last_run_timestamp_seconds $(date +%s)
+          EOF
 
   kubeconform:
     name: Kubeconform
@@ -55,6 +67,17 @@ jobs:
               --summary \
               "$build_file"
           done
+      - name: Push metrics to Pushgateway
+        if: always()
+        continue-on-error: true
+        run: |
+          cat <<EOF | curl --silent --show-error --fail --max-time 10 -X PUT --data-binary @- \
+            http://pushgateway.pushgateway.svc.cluster.local:9091/metrics/job/ci/instance/kubeconform
+          # TYPE github_actions_job_success gauge
+          github_actions_job_success ${{ job.status == 'success' && '1' || '0' }}
+          # TYPE github_actions_job_last_run_timestamp_seconds gauge
+          github_actions_job_last_run_timestamp_seconds $(date +%s)
+          EOF
 
   k3s-plan-consistency:
     name: K3s Plan Consistency
@@ -87,6 +110,17 @@ jobs:
           fi
 
           exit $status
+      - name: Push metrics to Pushgateway
+        if: always()
+        continue-on-error: true
+        run: |
+          cat <<EOF | curl --silent --show-error --fail --max-time 10 -X PUT --data-binary @- \
+            http://pushgateway.pushgateway.svc.cluster.local:9091/metrics/job/ci/instance/k3s-plan-consistency
+          # TYPE github_actions_job_success gauge
+          github_actions_job_success ${{ job.status == 'success' && '1' || '0' }}
+          # TYPE github_actions_job_last_run_timestamp_seconds gauge
+          github_actions_job_last_run_timestamp_seconds $(date +%s)
+          EOF
 
   kube-linter:
     name: Kube Linter
@@ -98,3 +132,14 @@ jobs:
         with:
           directory: .
           config: .kube-linter.yaml
+      - name: Push metrics to Pushgateway
+        if: always()
+        continue-on-error: true
+        run: |
+          cat <<EOF | curl --silent --show-error --fail --max-time 10 -X PUT --data-binary @- \
+            http://pushgateway.pushgateway.svc.cluster.local:9091/metrics/job/ci/instance/kube-linter
+          # TYPE github_actions_job_success gauge
+          github_actions_job_success ${{ job.status == 'success' && '1' || '0' }}
+          # TYPE github_actions_job_last_run_timestamp_seconds gauge
+          github_actions_job_last_run_timestamp_seconds $(date +%s)
+          EOF
