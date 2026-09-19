@@ -13,3 +13,6 @@ spec:
     - port: metrics
       path: /metrics
       interval: 30s
+      # Preserve job/instance labels set by pushing clients instead of
+      # overwriting them with this scrape target's own job/instance.
+      honorLabels: true
