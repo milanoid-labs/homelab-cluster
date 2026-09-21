@@ -136,10 +136,15 @@
       ],
     },
     {
+      // linuxserver/qbittorrent carries years of legacy tag formats (date-stamped,
+      // arch-prefixed, bare build numbers like "113") alongside current bare-semver
+      // releases. 'loose' versioning parsed those stray numeric tags as comparable
+      // semver and proposed a 2019 tag as "newer" than the 2021 tag in use (#529).
+      // Constrain to the real release shape so only actual semver tags are considered.
       matchPackageNames: [
         'linuxserver/qbittorrent',
       ],
-      versioning: 'loose',
+      versioning: 'regex:^(?<major>\\d+)\\.(?<minor>\\d+)\\.(?<patch>\\d+)$',
     },
     {
       // home-dashboard's images are tagged "backend-vX.Y.Z" / "frontend-vX.Y.Z"
