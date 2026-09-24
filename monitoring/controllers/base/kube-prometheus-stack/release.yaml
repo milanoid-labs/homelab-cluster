@@ -72,6 +72,58 @@ spec:
               resources:
                 requests:
                   storage: 1Gi
+        # SOPS-encrypted Secret from monitoring/configs/staging/kube-prometheus-stack/,
+        # mounted at /etc/alertmanager/secrets/alertmanager-telegram/
+        secrets:
+          - alertmanager-telegram
+      # Replaces the chart's default config entirely, so the Watchdog -> "null"
+      # route and the default inhibit_rules are carried over explicitly.
+      config:
+        global:
+          resolve_timeout: 5m
+        route:
+          receiver: telegram.bot
+          group_by: [alertname]
+          group_wait: 30s
+          group_interval: 5m
+          repeat_interval: 12h
+          routes:
+            # Watchdog always fires (dead man's switch); don't page on it
+            - receiver: "null"
+              matchers:
+                - alertname = "Watchdog"
+        inhibit_rules:
+          - source_matchers:
+              - severity = critical
+            target_matchers:
+              - severity =~ warning|info
+            equal: [namespace, alertname]
+          - source_matchers:
+              - severity = warning
+            target_matchers:
+              - severity = info
+            equal: [namespace, alertname]
+          - source_matchers:
+              - alertname = InfoInhibitor
+            target_matchers:
+              - severity = info
+            equal: [namespace]
+          - target_matchers:
+              - alertname = InfoInhibitor
+        receivers:
+          - name: "null"
+          - name: telegram.bot
+            telegram_configs:
+              - bot_token_file: /etc/alertmanager/secrets/alertmanager-telegram/bot-token
+                chat_id: 110919235
+                parse_mode: HTML
+                message: |
+                  {{ range .Alerts }}
+                  <b>{{ .Labels.alertname }}</b>
+                  {{ .Annotations.summary }}
+                  {{ end }}
+        templates:
+          - /etc/alertmanager/config/*.tmpl
     prometheusOperator:
       resources:
         requests:
