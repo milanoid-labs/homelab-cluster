@@ -1,0 +1,18 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: api-rules
+  labels:
+    release: kube-prometheus-stack
+spec:
+  groups:
+    - name: api
+      rules:
+        - alert: ApiTargetDown
+          expr: up{job="home-dashboard-backend"} == 0
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: "API target {{ $labels.instance }} is down"
+            description: "Prometheus has failed to scrape {{ $labels.job }} on {{ $labels.instance }} for 5 minutes."
