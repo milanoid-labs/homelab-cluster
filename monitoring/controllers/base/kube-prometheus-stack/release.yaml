@@ -32,6 +32,7 @@ spec:
     # (all monitoring pods were BestEffort before this — no requests/limits at all).
     # Treat as a first pass; revisit once a week of persisted metrics history
     # exists, same method as commit 5ddf7c1 used for app pods.
+    nameOverride: prometheus
     prometheus:
       prometheusSpec:
         # Explicit rather than relying on the chart default, since retention
