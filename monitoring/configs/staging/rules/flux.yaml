@@ -1,0 +1,22 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: flux-rules
+  labels:
+    release: kube-prometheus-stack
+spec:
+  groups:
+    - name: flux
+      rules:
+        # gotk_resource_info comes from the kube-state-metrics customResourceState config
+        # in the kube-prometheus-stack HelmRelease. Catches what `flux get kustomizations`
+        # hides: a Kustomization is Ready once it has applied a HelmRelease object, even
+        # when the Helm upgrade behind that HelmRelease then fails and stalls.
+        - alert: FluxReconciliationFailure
+          expr: max by (customresource_kind, exported_namespace, name) (gotk_resource_info{ready="False", suspended!="true"}) == 1
+          for: 15m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Flux {{ $labels.customresource_kind }} {{ $labels.exported_namespace }}/{{ $labels.name }} not Ready for 15m"
+            description: "Check it with `flux get all -n {{ $labels.exported_namespace }}` and `flux logs --kind={{ $labels.customresource_kind }} --name={{ $labels.name }} -n {{ $labels.exported_namespace }}`."
