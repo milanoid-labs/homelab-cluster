@@ -147,12 +147,16 @@ spec:
         limits:
           memory: 128Mi
     kube-state-metrics:
+      # customResourceState (below) makes kube-state-metrics watch and cache every CRD in
+      # the cluster (81, ~25 MiB of JSON), not just the Flux ones. With the config it was
+      # OOMKilled at 96Mi within seconds of starting; reproduced locally with v2.20.0, it
+      # OOMs at 96Mi, runs at ~100-115Mi, and needs ~46Mi without the config.
       resources:
         requests:
           cpu: 5m
-          memory: 32Mi
+          memory: 128Mi
         limits:
-          memory: 96Mi
+          memory: 256Mi
       # Export the Ready condition of Flux objects as gotk_resource_info, the metric the
       # Flux Grafana dashboards and the FluxReconciliationFailure alert are built on.
       # Adapted from fluxcd/flux2-monitoring-example, minus its `collectors: []` and
