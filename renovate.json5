@@ -36,6 +36,21 @@
       datasourceTemplate: 'github-releases',
       versioningTemplate: 'regex:^v(?<major>\\d+)\\.(?<minor>\\d+)\\.(?<patch>\\d+)\\+k3s(?<build>\\d+)$',
     },
+    {
+      // gh is installed from a GitHub release .deb, not apt, so no built-in manager
+      // sees ARG GH_VERSION. Track it against cli/cli releases (tagged vX.Y.Z; the
+      // ARG holds the bare version, hence extractVersionTemplate).
+      customType: 'regex',
+      managerFilePatterns: [
+        '/(^|/)runner/Dockerfile$/',
+      ],
+      matchStrings: [
+        'ARG GH_VERSION=(?<currentValue>\\d+\\.\\d+\\.\\d+)',
+      ],
+      depNameTemplate: 'cli/cli',
+      datasourceTemplate: 'github-releases',
+      extractVersionTemplate: '^v(?<version>.*)$',
+    },
   ],
   packageRules: [
     {
@@ -110,6 +125,13 @@
       matchPackageNames: ['k3s-io/k3s'],
       pinDigests: false,
       groupName: 'k3s upgrade',
+    },
+    {
+      // Same reason as the docker rule above: :semanticPrefixFixDepsChoreOthers would
+      // otherwise label this chore(deps). A gh bump changes the runner image, so it's a fix.
+      matchManagers: ['custom.regex'],
+      matchPackageNames: ['cli/cli'],
+      semanticCommitType: 'fix',
     },
     {
       // spec.upgrade.image is deliberately left untagged so the tag follows
