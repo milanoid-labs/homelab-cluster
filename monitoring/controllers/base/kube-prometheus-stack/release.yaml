@@ -143,9 +143,10 @@ spec:
       # Adapted from fluxcd/flux2-monitoring-example, minus its `collectors: []` and
       # `--custom-resource-state-only`, which would switch off the standard metrics
       # (kube_pod_*, kube_deployment_*, ...) that the default alerts depend on.
-      # Covers every installed Flux kind that has a Ready condition. Image automation is
-      # left out (its CRDs aren't installed), and so are Alert and Provider (v1beta3 kinds
-      # with no Ready condition, so the alert could never use them).
+      # Covers every installed Flux kind that has a Ready condition (checked against the
+      # 11 *.toolkit.fluxcd.io CRDs in the cluster). Image automation is left out (its
+      # CRDs aren't installed), and so are Alert and Provider (v1beta3 kinds with no
+      # status at all, so the alert could never use them).
       rbac:
         extraRules:
           - apiGroups:
@@ -156,6 +157,7 @@ spec:
             resources:
               - gitrepositories
               - buckets
+              - externalartifacts
               - helmrepositories
               - helmcharts
               - ocirepositories
@@ -323,6 +325,26 @@ spec:
                       ready: [status, conditions, "[type=Ready]", status]
                       suspended: [spec, suspend]
                       webhook_path: [status, webhookPath]
+              # Produced by third-party controllers rather than Flux itself. No
+              # spec.suspend on this kind, so no `suspended` label.
+              - groupVersionKind:
+                  group: source.toolkit.fluxcd.io
+                  version: v1
+                  kind: ExternalArtifact
+                metricNamePrefix: gotk
+                metrics:
+                  - name: resource_info
+                    help: The current state of a Flux ExternalArtifact resource.
+                    each:
+                      type: Info
+                      info:
+                        labelsFromPath:
+                          name: [metadata, name]
+                    labelsFromPath:
+                      exported_namespace: [metadata, namespace]
+                      ready: [status, conditions, "[type=Ready]", status]
+                      revision: [status, artifact, revision]
+                      source_name: [spec, sourceRef, name]
     prometheus-node-exporter:
       resources:
         requests:
