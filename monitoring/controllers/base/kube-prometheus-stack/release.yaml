@@ -143,20 +143,25 @@ spec:
       # Adapted from fluxcd/flux2-monitoring-example, minus its `collectors: []` and
       # `--custom-resource-state-only`, which would switch off the standard metrics
       # (kube_pod_*, kube_deployment_*, ...) that the default alerts depend on.
-      # Only kinds whose CRDs exist here: no image automation, and no Bucket.
+      # Covers every installed Flux kind that has a Ready condition. Image automation is
+      # left out (its CRDs aren't installed), and so are Alert and Provider (v1beta3 kinds
+      # with no Ready condition, so the alert could never use them).
       rbac:
         extraRules:
           - apiGroups:
               - source.toolkit.fluxcd.io
               - kustomize.toolkit.fluxcd.io
               - helm.toolkit.fluxcd.io
+              - notification.toolkit.fluxcd.io
             resources:
               - gitrepositories
+              - buckets
               - helmrepositories
               - helmcharts
               - ocirepositories
               - kustomizations
               - helmreleases
+              - receivers
             verbs: ["list", "watch"]
       customResourceState:
         enabled: true
@@ -280,6 +285,44 @@ spec:
                       suspended: [spec, suspend]
                       revision: [status, artifact, revision]
                       url: [spec, url]
+              - groupVersionKind:
+                  group: source.toolkit.fluxcd.io
+                  version: v1
+                  kind: Bucket
+                metricNamePrefix: gotk
+                metrics:
+                  - name: resource_info
+                    help: The current state of a Flux Bucket resource.
+                    each:
+                      type: Info
+                      info:
+                        labelsFromPath:
+                          name: [metadata, name]
+                    labelsFromPath:
+                      exported_namespace: [metadata, namespace]
+                      ready: [status, conditions, "[type=Ready]", status]
+                      suspended: [spec, suspend]
+                      revision: [status, artifact, revision]
+                      endpoint: [spec, endpoint]
+                      bucket_name: [spec, bucketName]
+              - groupVersionKind:
+                  group: notification.toolkit.fluxcd.io
+                  version: v1
+                  kind: Receiver
+                metricNamePrefix: gotk
+                metrics:
+                  - name: resource_info
+                    help: The current state of a Flux Receiver resource.
+                    each:
+                      type: Info
+                      info:
+                        labelsFromPath:
+                          name: [metadata, name]
+                    labelsFromPath:
+                      exported_namespace: [metadata, namespace]
+                      ready: [status, conditions, "[type=Ready]", status]
+                      suspended: [spec, suspend]
+                      webhook_path: [status, webhookPath]
     prometheus-node-exporter:
       resources:
         requests:
