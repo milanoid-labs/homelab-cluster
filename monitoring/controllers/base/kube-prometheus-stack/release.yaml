@@ -117,10 +117,16 @@ spec:
               - bot_token_file: /etc/alertmanager/secrets/alertmanager-telegram/bot-token
                 chat_id: 110919235
                 parse_mode: HTML
+                # Per-alert status, since send_resolved (default true) sends a second
+                # message on recovery that otherwise reads exactly like the first. One
+                # message can mix firing and resolved alerts of the same group.
+                # Annotations go through `html`: with parse_mode HTML, a stray <, > or &
+                # makes Telegram reject the whole message and the alert is lost.
                 message: |
                   {{ range .Alerts }}
-                  <b>{{ .Labels.alertname }}</b>
-                  {{ .Annotations.summary }}
+                  {{ if eq .Status "firing" }}🔥 FIRING{{ else }}✅ RESOLVED{{ end }}: <b>{{ .Labels.alertname }}</b>
+                  {{ .Annotations.summary | html }}
+                  {{ with .Annotations.description }}<i>{{ . | html }}</i>{{ end }}
                   {{ end }}
         templates:
           - /etc/alertmanager/config/*.tmpl
