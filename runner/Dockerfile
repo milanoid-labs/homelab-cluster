@@ -1,6 +1,6 @@
 FROM ghcr.io/actions/actions-runner:2.337.0@sha256:e5496277be5d09bc968b3d64911b74e219ac4a3f2edce956a3ecf9271bea1ef4
 
-ARG GH_VERSION=2.89.0
+ARG GH_VERSION=2.102.0
 
 USER root
 RUN ARCH=$(dpkg --print-architecture) \
