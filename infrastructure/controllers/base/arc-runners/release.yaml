@@ -6,6 +6,11 @@ metadata:
   namespace: arc-runners
 spec:
   interval: 30m
+  # The controller deletes any AutoscalingRunnerSet whose version label differs from
+  # its own, so the controller must finish upgrading before this chart is upgraded.
+  dependsOn:
+    - name: arc-controller
+      namespace: arc-systems
   chart:
     spec:
       chart: gha-runner-scale-set
@@ -19,6 +24,8 @@ spec:
     crds: Create
   upgrade:
     crds: CreateReplace
+    remediation:
+      retries: 3
   driftDetection:
     mode: enabled
   values:
