@@ -397,6 +397,13 @@ spec:
           - secretName: grafana-tls-secret
             hosts:
               - grafana.milanoid.net
+      # Dashboards shipped as ConfigMaps (e.g. monitoring/configs/staging/dashboards/) choose
+      # their folder via this annotation; the chart's built-in dashboards don't set it.
+      sidecar:
+        dashboards:
+          folderAnnotation: grafana_folder
+          provider:
+            foldersFromFilesStructure: true
       dashboardProviders:
         dashboardproviders.yaml:
           apiVersion: 1

@@ -22,6 +22,12 @@ spec:
   driftDetection:
     mode: enabled
   values:
+    # Exposes controller metrics and makes the controller start each listener with a
+    # /metrics endpoint (gha_* runner/job metrics), scraped by podmonitor.yaml.
+    metrics:
+      controllerManagerAddr: ":8080"
+      listenerAddr: ":8080"
+      listenerEndpoint: "/metrics"
     resources:
       limits:
         memory: 256Mi

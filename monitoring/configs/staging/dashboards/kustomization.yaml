@@ -1,0 +1,15 @@
+---
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+# Picked up by the Grafana dashboard sidecar (label grafana_dashboard=1, any namespace);
+# the grafana_folder annotation places it in the Homelab folder.
+generatorOptions:
+  disableNameSuffixHash: true
+  labels:
+    grafana_dashboard: "1"
+  annotations:
+    grafana_folder: Homelab
+configMapGenerator:
+  - name: grafana-dashboard-arc-runners
+    files:
+      - arc-runners.json
