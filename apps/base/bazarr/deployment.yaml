@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: bazarr
-          image: ghcr.io/hotio/bazarr:release-1.6.2@sha256:2d6c79fbc2b39794b16488746796f579946393ebce64ee4d638537a4414f0bb1
+          image: ghcr.io/hotio/bazarr:release-1.6.2@sha256:f44eb38855be482106d6af9b4c7a3c508f5c04a759e1e9f2812346d629599a52
           envFrom:
             - configMapRef:
                 name: bazarr-configmap
