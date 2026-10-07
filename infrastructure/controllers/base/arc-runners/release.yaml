@@ -35,7 +35,7 @@ spec:
     # Each runner pod can now burst to 4Gi (see the runner container below) and the
     # nodes are 7.3Gi / 11.4Gi allocatable, so keep the fan-out low enough that a
     # burst of concurrent agent jobs cannot push a node into memory pressure.
-    maxRunners: 4
+    maxRunners: 8
     template:
       spec:
         initContainers:
