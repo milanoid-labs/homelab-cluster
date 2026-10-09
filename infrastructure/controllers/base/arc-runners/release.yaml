@@ -32,10 +32,7 @@ spec:
     githubConfigUrl: "https://github.com/milanoid-labs"
     githubConfigSecret: github-app
     minRunners: 1
-    # Each runner pod can now burst to 4Gi (see the runner container below) and the
-    # nodes are 7.3Gi / 11.4Gi allocatable, so keep the fan-out low enough that a
-    # burst of concurrent agent jobs cannot push a node into memory pressure.
-    maxRunners: 8
+    maxRunners: 20 # was 8 with 2 nodes
     template:
       spec:
         initContainers:
