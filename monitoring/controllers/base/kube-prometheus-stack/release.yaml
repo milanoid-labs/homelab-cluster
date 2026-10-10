@@ -6,6 +6,9 @@ metadata:
   namespace: monitoring
 spec:
   interval: 30m
+  # Default 5m is too short here: Prometheus WAL replay and Grafana startup on the
+  # slow nodes can exceed it, failing the upgrade even though it eventually rolls out.
+  timeout: 10m
   chart:
     spec:
       chart: kube-prometheus-stack
@@ -19,6 +22,10 @@ spec:
     crds: Create
   upgrade:
     crds: CreateReplace
+    # Without remediation a single failed upgrade stalls the release (RetriesExceeded)
+    # until a manual `flux reconcile --force`.
+    remediation:
+      retries: 3
   driftDetection:
     mode: enabled
     ignore:
@@ -376,12 +383,15 @@ spec:
         existingSecret: grafana-admin-secret
         userKey: admin-user
         passwordKey: admin-password
+      # Grafana 13 idles at ~420Mi; at 512Mi (GOMEMLIMIT ~460MiB) it GC-thrashed under
+      # dashboard load, failed probes and was restarted. The chart derives GOMEMLIMIT
+      # from the limit.
       resources:
         requests:
-          cpu: 20m
-          memory: 192Mi
+          cpu: 50m
+          memory: 384Mi
         limits:
-          memory: 512Mi
+          memory: 1Gi
       persistence:
         enabled: true
         type: pvc
