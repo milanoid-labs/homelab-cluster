@@ -15,7 +15,7 @@ spec:
         app: home-dashboard-backend
     spec:
       containers:
-        - image: ghcr.io/milanoid-labs/home-dashboard-api:backend-v0.4.8@sha256:935c4d9a9496d23d30312cd5e0aab590d7990b5c6fbed7e1a902034b778d4f5c
+        - image: ghcr.io/milanoid-labs/home-dashboard-api:backend-v0.4.9@sha256:b5ef651602a563c559148735334a2ec5c7a462e289854bb615ab3e96e9e2f1c2
           name: home-dashboard-backend
           ports:
             - containerPort: 8001
