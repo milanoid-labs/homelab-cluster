@@ -9,3 +9,4 @@ resources:
   - argo-workflows
   - argo-rollouts
   - system-upgrade-controller
+  - ai-readonly
