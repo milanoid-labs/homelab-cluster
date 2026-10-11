@@ -8,6 +8,9 @@ set up by hand. Prometheus scrapes it via
 - `prometheus-node-exporter` (Debian package) on :9100 provides RAM, CPU and coretemp (hwmon).
 - node_exporter can't see LVM thin pool usage, so `lvm-thin-textfile.sh` runs every minute
   and writes `proxmox_lvm_thin_*` metrics for the textfile collector.
+- SMART/NVMe health (`smartmon_*`, `nvme_*`) comes from `prometheus-node-exporter-collectors`,
+  a Recommends of the exporter package, via its smartmon and nvme timers (every 15 min).
+  It needs `smartmontools` and `nvme-cli`, which Proxmox already ships.
 
 ## Install (as root on the host)
 
@@ -21,5 +24,5 @@ install -m 755 lvm-thin-textfile.sh /usr/local/bin/
 install -m 644 lvm-thin-textfile.service lvm-thin-textfile.timer /etc/systemd/system/
 systemctl daemon-reload
 systemctl enable --now lvm-thin-textfile.timer
-curl -s localhost:9100/metrics | grep -E '^proxmox_lvm_thin|coretemp'
+curl -s localhost:9100/metrics | grep -E '^proxmox_lvm_thin|coretemp|^smartmon_device_smart_healthy|^nvme_critical_warning'
 ```

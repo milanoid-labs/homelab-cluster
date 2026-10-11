@@ -1,0 +1,88 @@
+---
+# Alerts for the Proxmox host (node_exporter scraped via ../scrape/proxmox.yaml).
+# The chart's node-exporter alerts don't cover it (they select job="node-exporter").
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: proxmox-rules
+  labels:
+    release: kube-prometheus-stack
+spec:
+  groups:
+    - name: proxmox
+      rules:
+        - alert: ProxmoxExporterDown
+          expr: up{instance="proxmox"} == 0
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Proxmox node_exporter is unreachable"
+            description: "Prometheus has failed to scrape 192.168.1.200:9100 for 5 minutes. The host may be down, or prometheus-node-exporter stopped."
+        # The textfile metrics come from systemd timers (lvm-thin every minute,
+        # smartmon/nvme every 15 min); a stuck timer would silently freeze the panels.
+        - alert: ProxmoxTextfileMetricsStale
+          expr: time() - node_textfile_mtime_seconds{instance="proxmox",file=~".*/(lvm_thin|smartmon|nvme)\\.prom"} > 3600
+          for: 10m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Proxmox metrics file {{ $labels.file }} is stale"
+            description: "{{ $labels.file }} hasn't been updated for over an hour. Check its systemd timer on the Proxmox host."
+        - alert: ProxmoxCpuHot
+          expr: node_hwmon_temp_celsius{instance="proxmox",chip="platform_coretemp_0",sensor="temp1"} > 85
+          for: 10m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Proxmox CPU package at {{ $value }} °C"
+            description: "CPU package temperature has been above 85 °C for 10 minutes (high = 94 °C)."
+        - alert: ProxmoxThinPoolFilling
+          expr: proxmox_lvm_thin_data_used_ratio{instance="proxmox"} > 0.85
+          for: 15m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Thin pool {{ $labels.vg }}/{{ $labels.lv }} is {{ $value | humanizePercentage }} full"
+            description: "local-lvm data usage is above 85%. A full thin pool makes guest writes fail."
+        - alert: ProxmoxThinPoolMetadataFilling
+          expr: proxmox_lvm_thin_metadata_used_ratio{instance="proxmox"} > 0.8
+          for: 15m
+          labels:
+            severity: critical
+          annotations:
+            summary: "Thin pool {{ $labels.vg }}/{{ $labels.lv }} metadata is {{ $value | humanizePercentage }} full"
+            description: "Full thin pool metadata switches the pool to read-only, even with free data space. Extend tmeta with lvextend --poolmetadatasize."
+        - alert: ProxmoxDiskSmartFailing
+          expr: smartmon_device_smart_healthy{instance="proxmox"} == 0
+          labels:
+            severity: critical
+          annotations:
+            summary: "Proxmox disk {{ $labels.disk }} fails its SMART health check"
+            description: "smartctl reports {{ $labels.disk }} as failing. Plan to replace it; for a pool leg see lvconvert --repair."
+        # The SATA SSD already had 25 runtime bad blocks on 2026-10-11; alert on growth, not the level.
+        # Fires for 6 h after any increase.
+        - alert: ProxmoxSsdBadBlocksGrowing
+          expr: max_over_time(smartmon_runtime_bad_block_raw_value{instance="proxmox"}[6h]) - min_over_time(smartmon_runtime_bad_block_raw_value{instance="proxmox"}[6h]) > 0
+          labels:
+            severity: warning
+          annotations:
+            summary: "Runtime bad blocks on {{ $labels.disk }} increased by {{ $value }} in 6 h"
+            description: "{{ $labels.disk }} is a leg of the RAID1 thin pool. Check lvs -a -o lv_name,copy_percent,lv_health_status pve."
+        - alert: ProxmoxSataSectorErrors
+          expr: |
+            smartmon_reallocated_sector_ct_raw_value{instance="proxmox"} > 0
+              or smartmon_current_pending_sector_raw_value{instance="proxmox"} > 0
+              or smartmon_reported_uncorrect_raw_value{instance="proxmox"} > 0
+          labels:
+            severity: warning
+          annotations:
+            summary: "{{ $labels.disk }} SMART attribute {{ $labels.smart_id }} is {{ $value }}"
+            description: "Reallocated (5), pending (197) or uncorrectable (187) sectors on {{ $labels.disk }} mean the disk is degrading."
+        - alert: ProxmoxNvmeError
+          expr: nvme_critical_warning{instance="proxmox"} > 0 or nvme_media_errors_total{instance="proxmox"} > 0
+          labels:
+            severity: critical
+          annotations:
+            summary: "NVMe {{ $labels.device }} reports a critical warning or media errors ({{ $value }})"
+            description: "Check nvme smart-log /dev/nvme0. The NVMe holds the Proxmox OS (not mirrored) and one leg of the thin pool."
