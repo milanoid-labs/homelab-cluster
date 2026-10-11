@@ -11,6 +11,10 @@ set up by hand. Prometheus scrapes it via
 
 ## Install (as root on the host)
 
+The Debian package's node_exporter reads textfiles from `/var/lib/prometheus/node-exporter`
+by default (compiled in; `ARGS` in `/etc/default/prometheus-node-exporter` stays empty). On
+other distros, add `--collector.textfile.directory=/var/lib/prometheus/node-exporter`.
+
 ```bash
 apt install -y prometheus-node-exporter
 install -m 755 lvm-thin-textfile.sh /usr/local/bin/

@@ -3,9 +3,15 @@
 set -eu
 export LC_ALL=C
 OUT=/var/lib/prometheus/node-exporter/lvm_thin.prom
+# Run lvs outside the pipeline: in sh, set -e only sees awk's exit status, so a failing
+# lvs would replace the last good file with headers only. On failure (or no pools) exit
+# non-zero and keep the previous file.
+LVS=$(lvs --noheadings --units b --nosuffix -o vg_name,lv_name,lv_size,data_percent,metadata_percent \
+    --select 'segtype=thin-pool')
+[ -n "$LVS" ] || { echo "lvs returned no thin pools" >&2; exit 1; }
 TMP=$(mktemp "$OUT.XXXXXX")
-lvs --noheadings --units b --nosuffix -o vg_name,lv_name,lv_size,data_percent,metadata_percent \
-    --select 'segtype=thin-pool' | awk '
+trap 'rm -f "$TMP"' EXIT
+printf '%s\n' "$LVS" | awk '
   { l = sprintf("vg=\"%s\",lv=\"%s\"", $1, $2)
     size[l] = $3; data[l] = $4 / 100; meta[l] = $5 / 100 }
   END {
