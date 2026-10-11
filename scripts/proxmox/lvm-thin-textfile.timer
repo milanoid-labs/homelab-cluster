@@ -1,0 +1,9 @@
+[Unit]
+Description=Export LVM thin pool usage every minute
+
+[Timer]
+OnCalendar=minutely
+Persistent=true
+
+[Install]
+WantedBy=timers.target

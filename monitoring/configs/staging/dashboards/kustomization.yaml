@@ -13,3 +13,6 @@ configMapGenerator:
   - name: grafana-dashboard-arc-runners
     files:
       - arc-runners.json
+  - name: grafana-dashboard-proxmox
+    files:
+      - proxmox.json

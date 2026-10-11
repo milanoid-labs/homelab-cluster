@@ -4,3 +4,4 @@ kind: Kustomization
 resources:
   - rules.yaml
   - flux.yaml
+  - proxmox.yaml
