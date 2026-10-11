@@ -29,6 +29,22 @@ spec:
           annotations:
             summary: "Proxmox metrics file {{ $labels.file }} is stale"
             description: "{{ $labels.file }} hasn't been updated for over an hour. Check its systemd timer on the Proxmox host."
+        # The stale check above can't see a file that doesn't exist (e.g. after a host rebuild
+        # without the lvm-thin timer). absent() with equality matchers keeps the file label.
+        - alert: ProxmoxTextfileMetricsMissing
+          expr: |
+            (
+              absent(node_textfile_mtime_seconds{instance="proxmox",file="/var/lib/prometheus/node-exporter/lvm_thin.prom"})
+              or absent(node_textfile_mtime_seconds{instance="proxmox",file="/var/lib/prometheus/node-exporter/smartmon.prom"})
+              or absent(node_textfile_mtime_seconds{instance="proxmox",file="/var/lib/prometheus/node-exporter/nvme.prom"})
+            )
+            unless on () (up{instance="proxmox"} == 0)
+          for: 30m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Proxmox metrics file {{ $labels.file }} is missing"
+            description: "node_exporter on the Proxmox host doesn't serve {{ $labels.file }}. Check the lvm-thin-textfile / prometheus-node-exporter-smartmon / -nvme timers (scripts/proxmox/README.md)."
         - alert: ProxmoxCpuHot
           expr: node_hwmon_temp_celsius{instance="proxmox",chip="platform_coretemp_0",sensor="temp1"} > 85
           for: 10m
