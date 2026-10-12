@@ -1,6 +1,7 @@
 # Vendored from github.com/SynologyOpenSource/synology-csi deploy/kubernetes/v1.20/node.yml
 # at tag v1.3.1 (commit d6e51755fb09dc8e6979aa4f7e14649158c1b6a3). Local change: sidecar
-# imagePullPolicy Always -> IfNotPresent (images are digest-pinned in kustomization.yaml).
+# imagePullPolicy Always -> IfNotPresent (images are digest-pinned in kustomization.yaml),
+# deprecated serviceAccount -> serviceAccountName, kube-linter ignore annotations.
 apiVersion: v1
 kind: ServiceAccount
 metadata:
@@ -50,6 +51,14 @@ apiVersion: apps/v1
 metadata:
   name: synology-csi-node
   namespace: synology-csi
+  # The node plugin logs in to iSCSI targets with the host's iscsiadm (chroot into /host),
+  # attaches block devices from /dev, and formats/mounts them into kubelet's directory.
+  # That needs root, privileged and the host's network namespace; it can't be reduced.
+  annotations:
+    ignore-check.kube-linter.io/privileged-container: "CSI node plugin attaches and mounts block devices"
+    ignore-check.kube-linter.io/privilege-escalation-container: "privileged CSI node plugin"
+    ignore-check.kube-linter.io/host-network: "iSCSI sessions live in the host network namespace"
+    ignore-check.kube-linter.io/sensitive-host-mounts: "needs / for chroot iscsiadm and /dev for block devices"
 spec:
   selector:
     matchLabels:
@@ -59,7 +68,7 @@ spec:
       labels:
         app: synology-csi-node
     spec:
-      serviceAccount: csi-node-sa
+      serviceAccountName: csi-node-sa
       hostNetwork: true
       containers:
         - name: csi-driver-registrar
