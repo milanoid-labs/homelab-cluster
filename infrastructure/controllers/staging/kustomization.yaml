@@ -10,3 +10,4 @@ resources:
   - argo-rollouts
   - system-upgrade-controller
   - ai-readonly
+  - synology-csi
