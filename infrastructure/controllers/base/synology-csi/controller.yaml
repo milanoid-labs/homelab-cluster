@@ -1,7 +1,7 @@
 # Vendored from github.com/SynologyOpenSource/synology-csi deploy/kubernetes/v1.20/controller.yml
 # at tag v1.3.1 (commit d6e51755fb09dc8e6979aa4f7e14649158c1b6a3). Local changes:
 # - sidecar imagePullPolicy Always -> IfNotPresent (images are digest-pinned in kustomization.yaml)
-# - no privileged/SYS_ADMIN/hostNetwork: in controller mode (no --chroot-dir) the plugin only
+# - non-root pod; no privileged/SYS_ADMIN/hostNetwork: in controller mode (no --chroot-dir) the plugin only
 #   calls the DSM API over HTTPS and serves a unix socket to the sidecars; it never touches
 #   host devices. Upstream copied the node plugin's security context here.
 apiVersion: v1
@@ -89,6 +89,13 @@ spec:
         app: synology-csi-controller
     spec:
       serviceAccountName: csi-controller-sa
+      # Non-root for the whole pod: the sidecars and the plugin share the CSI socket in an
+      # emptyDir, so they must run as the same user. UID 1000 matches upstream v1.4.0, whose
+      # image declares USER 1000 and whose controller manifest runs it that way.
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
       containers:
         - name: csi-provisioner
           securityContext:
