@@ -1,0 +1,8 @@
+# Vendored from github.com/SynologyOpenSource/synology-csi deploy/kubernetes/v1.20/namespace.yml
+# at tag v1.3.1 (commit d6e51755fb09dc8e6979aa4f7e14649158c1b6a3), unmodified.
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: synology-csi
+  labels:
+    pod-security.kubernetes.io/enforce: privileged
