@@ -13,7 +13,7 @@ jobs:
   yaml-lint:
     name: YAML Lint
     runs-on: homelab-runners
-    container: pipelinecomponents/yamllint:latest@sha256:5ab5eb7da0ed5e606b07c1723fc8b275e925189f70ac259b26b7329cb5f8f44d
+    container: pipelinecomponents/yamllint:latest@sha256:f7f7b4f8824839e33690a880dbe20944128b0dc9c55522a0b92a29b3a905cecf
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
       - name: Run yamllint
