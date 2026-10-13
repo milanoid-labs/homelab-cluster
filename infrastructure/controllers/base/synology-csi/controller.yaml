@@ -120,7 +120,7 @@ spec:
             allowPrivilegeEscalation: false
             capabilities:
               drop: ["ALL"]
-          image: registry.k8s.io/sig-storage/csi-attacher:v3.3.0
+          image: registry.k8s.io/sig-storage/csi-attacher:v3.5.1@sha256:5f4bfcd75dd26c5d6c31cf1ff438f723aa9bcd30f1697297f93f85e158b54aca
           args:
             - --v=5
             - --csi-address=$(ADDRESS)
