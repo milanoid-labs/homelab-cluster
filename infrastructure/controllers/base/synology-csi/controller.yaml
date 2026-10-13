@@ -102,7 +102,7 @@ spec:
             allowPrivilegeEscalation: false
             capabilities:
               drop: ["ALL"]
-          image: registry.k8s.io/sig-storage/csi-provisioner:v3.0.0
+          image: registry.k8s.io/sig-storage/csi-provisioner:v3.0.0@sha256:6477988532358148d2e98f7c747db4e9250bbc7ad2664bf666348abf9ee1f5aa
           args:
             - --timeout=60s
             - --csi-address=$(ADDRESS)
@@ -120,7 +120,7 @@ spec:
             allowPrivilegeEscalation: false
             capabilities:
               drop: ["ALL"]
-          image: registry.k8s.io/sig-storage/csi-attacher:v3.3.0
+          image: registry.k8s.io/sig-storage/csi-attacher:v3.3.0@sha256:80dec81b679a733fda448be92a2331150d99095947d04003ecff3dbd7f2a476a
           args:
             - --v=5
             - --csi-address=$(ADDRESS)
@@ -136,7 +136,7 @@ spec:
             allowPrivilegeEscalation: false
             capabilities:
               drop: ["ALL"]
-          image: registry.k8s.io/sig-storage/csi-resizer:v1.3.0
+          image: registry.k8s.io/sig-storage/csi-resizer:v1.3.0@sha256:6e0546563b18872b0aa0cad7255a26bb9a87cb879b7fc3e2383c867ef4f706fb
           args:
             - --v=5
             - --csi-address=$(ADDRESS)
@@ -152,7 +152,7 @@ spec:
             allowPrivilegeEscalation: false
             capabilities:
               drop: ["ALL"]
-          image: synology/synology-csi:v1.3.1
+          image: synology/synology-csi:v1.3.1@sha256:8aa84848187648a65c899f54e96061d3f22cdba0ad8926d770b431d4b274406f
           args:
             - --nodeid=NotUsed
             - --endpoint=$(CSI_ENDPOINT)
