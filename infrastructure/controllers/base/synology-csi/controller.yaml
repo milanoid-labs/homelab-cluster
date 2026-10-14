@@ -152,7 +152,7 @@ spec:
             allowPrivilegeEscalation: false
             capabilities:
               drop: ["ALL"]
-          image: synology/synology-csi:v1.3.1
+          image: synology/synology-csi:v1.3.1@sha256:8aa84848187648a65c899f54e96061d3f22cdba0ad8926d770b431d4b274406f
           args:
             - --nodeid=NotUsed
             - --endpoint=$(CSI_ENDPOINT)
