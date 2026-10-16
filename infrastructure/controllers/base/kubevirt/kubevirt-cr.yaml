@@ -1,5 +1,5 @@
 ---
-# Based on the v1.9.1 release asset kubevirt-cr.yaml. Local change: workloads.nodePlacement.
+# Based on the v1.9.1 release asset kubevirt-cr.yaml. Local changes: infra and workloads placement.
 apiVersion: kubevirt.io/v1
 kind: KubeVirt
 metadata:
@@ -14,6 +14,23 @@ spec:
     imagePullPolicy: IfNotPresent
   customizeComponents: {}
   imagePullPolicy: IfNotPresent
+  # Infra = virt-api, virt-controller, export proxy, template components. Upstream's default
+  # (used only when nodePlacement is unset) *requires* a control-plane node, which here is
+  # the single, busiest node. Run them on ordinary workers instead, one replica each: with
+  # one control plane there's no real HA to buy, and running VMs don't need virt-api.
+  # virt-operator gets the same placement via a patch in kustomization.yaml.
+  infra:
+    replicas: 1
+    nodePlacement:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: node-role.kubernetes.io/worker
+                    operator: Exists
+                  - key: homelab.milanoid.net/kubevirt-runners
+                    operator: DoesNotExist
   # Workloads = virt-handler (the per-node agent that drives libvirt/QEMU). Only kubevirt01
   # has a /dev/kvm meant for VMs, and it is tainted to keep everything else off.
   # virt-api/virt-controller (infra) keep the default placement on any node.

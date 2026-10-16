@@ -42,3 +42,34 @@ patches:
                     value: quay.io/kubevirt/virt-handler:v1.9.1@sha256:c23b635ea4aff7f0779c6c061c431da0469c7796255e6de90a5970236b5ea61b
                   - name: VIRT_LAUNCHER_IMAGE
                     value: quay.io/kubevirt/virt-launcher:v1.9.1@sha256:53e6d12197761cda653201f82e295ac6098d689a58bc2c68df0970c248d61fa6
+                  # Also deployed by default (export proxy, template components) or started on
+                  # demand (export server). virt-template-* has its own version line.
+                  - name: VIRT_EXPORTPROXY_IMAGE
+                    value: quay.io/kubevirt/virt-exportproxy:v1.9.1@sha256:fe9a0a297e7b407c3a322c6f5fccba5313c668907c30cb0b80b8c51bcdea640a
+                  - name: VIRT_EXPORTSERVER_IMAGE
+                    value: quay.io/kubevirt/virt-exportserver:v1.9.1@sha256:76c01dca74921eb5fd74d00b82e77a60d58e8213c72d84cc66a3bc92679690b8
+                  - name: VIRT_TEMPLATE_APISERVER_IMAGE
+                    value: quay.io/kubevirt/virt-template-apiserver:v0.2.3@sha256:27defde24b4a4705d6096a86d134df0dc324243b56be8f0c057e1882c6da338b
+                  - name: VIRT_TEMPLATE_CONTROLLER_IMAGE
+                    value: quay.io/kubevirt/virt-template-controller:v0.2.3@sha256:b45ac55de5fc9dbbee14974b45718c41eaed4d4979f92677dab3500598e33d22
+  # virt-operator isn't placed by the CR (it isn't created by itself), so mirror
+  # spec.infra.nodePlacement here: one replica on an ordinary worker, off the busy single
+  # control plane that upstream's default requires.
+  - target:
+      kind: Deployment
+      name: virt-operator
+    patch: |-
+      - op: replace
+        path: /spec/replicas
+        value: 1
+      - op: replace
+        path: /spec/template/spec/affinity
+        value:
+          nodeAffinity:
+            requiredDuringSchedulingIgnoredDuringExecution:
+              nodeSelectorTerms:
+                - matchExpressions:
+                    - key: node-role.kubernetes.io/worker
+                      operator: Exists
+                    - key: homelab.milanoid.net/kubevirt-runners
+                      operator: DoesNotExist

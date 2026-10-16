@@ -60,7 +60,7 @@
         '/infrastructure/controllers/base/kubevirt/kustomization\\.yaml$/',
       ],
       matchStrings: [
-        'value: (?<depName>quay\\.io/kubevirt/virt-[a-z]+):(?<currentValue>v[0-9.]+)@(?<currentDigest>sha256:[a-f0-9]+)',
+        'value: (?<depName>quay\\.io/kubevirt/virt-[a-z-]+):(?<currentValue>v[0-9.]+)@(?<currentDigest>sha256:[a-f0-9]+)',
       ],
       datasourceTemplate: 'docker',
     },
