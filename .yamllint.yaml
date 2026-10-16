@@ -7,6 +7,7 @@ ignore: |
   **/renovate-container-env.yaml
   infrastructure/controllers/base/system-upgrade-controller/crd.yaml
   infrastructure/controllers/base/system-upgrade-controller/controller.yaml
+  infrastructure/controllers/base/kubevirt/kubevirt-operator.yaml
 rules:
   line-length:
     max: 1000  # SOPS-encrypted values, image digests, and long hostnames
