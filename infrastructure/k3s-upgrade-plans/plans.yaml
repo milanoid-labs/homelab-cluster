@@ -24,6 +24,10 @@ metadata:
 spec:
   concurrency: 1
   cordon: true
+  tolerations:
+    - key: homelab.milanoid.net/kubevirt-runners
+      operator: Exists
+      effect: NoSchedule
   nodeSelector:
     matchExpressions:
       - key: node-role.kubernetes.io/control-plane
