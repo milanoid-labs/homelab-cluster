@@ -1,0 +1,29 @@
+---
+# Based on the v1.9.1 release asset kubevirt-cr.yaml. Local change: workloads.nodePlacement.
+apiVersion: kubevirt.io/v1
+kind: KubeVirt
+metadata:
+  name: kubevirt
+  namespace: kubevirt
+spec:
+  certificateRotateStrategy: {}
+  configuration:
+    developerConfiguration:
+      # containerDisk, cloudInitNoCloud and the pod network are GA; no gates needed.
+      featureGates: []
+    imagePullPolicy: IfNotPresent
+  customizeComponents: {}
+  imagePullPolicy: IfNotPresent
+  # Workloads = virt-handler (the per-node agent that drives libvirt/QEMU). Only kubevirt01
+  # has a /dev/kvm meant for VMs, and it is tainted to keep everything else off.
+  # virt-api/virt-controller (infra) keep the default placement on any node.
+  # VMIs are not covered by this: each VMI needs its own nodeSelector and toleration.
+  workloads:
+    nodePlacement:
+      nodeSelector:
+        homelab.milanoid.net/kubevirt-runners: "true"
+      tolerations:
+        - key: homelab.milanoid.net/kubevirt-runners
+          operator: Exists
+          effect: NoSchedule
+  workloadUpdateStrategy: {}

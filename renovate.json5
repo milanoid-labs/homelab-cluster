@@ -51,6 +51,19 @@
       datasourceTemplate: 'github-releases',
       extractVersionTemplate: '^v(?<version>.*)$',
     },
+    {
+      // KubeVirt's virt-operator starts the other components itself, so their images are
+      // plain env strings in a kustomize patch, which no built-in manager reads. Track
+      // them here so they move with the operator image in the same 'kubevirt' group.
+      customType: 'regex',
+      managerFilePatterns: [
+        '/infrastructure/controllers/base/kubevirt/kustomization\\.yaml$/',
+      ],
+      matchStrings: [
+        'value: (?<depName>quay\\.io/kubevirt/virt-[a-z]+):(?<currentValue>v[0-9.]+)@(?<currentDigest>sha256:[a-f0-9]+)',
+      ],
+      datasourceTemplate: 'docker',
+    },
   ],
   packageRules: [
     {
@@ -141,6 +154,24 @@
       matchManagers: ['kubernetes'],
       matchPackageNames: ['rancher/k3s-upgrade'],
       enabled: false,
+    },
+    {
+      // kubevirt-operator.yaml is a vendored release asset; its tag-only image line must
+      // stay as upstream ships it (the real pin is in kustomization.yaml). Without this,
+      // pinDigests would edit the vendored file.
+      matchManagers: ['kubernetes'],
+      matchPackageNames: ['quay.io/kubevirt/**'],
+      enabled: false,
+    },
+    {
+      // A KubeVirt upgrade is the operator image (kustomize images:) plus four component
+      // digests (custom.regex above) plus the vendored manifest. One PR, merged by hand.
+      matchPackageNames: ['quay.io/kubevirt/**'],
+      groupName: 'kubevirt',
+      automerge: false,
+      prBodyNotes: [
+        '⚠️ Before merging: replace `infrastructure/controllers/base/kubevirt/kubevirt-operator.yaml` with the new release asset, update the digest-only `VIRT_OPERATOR_IMAGE` in the patch, and check the k8s support matrix (kubevirt/sig-release).',
+      ],
     },
     {
       matchPackageNames: [

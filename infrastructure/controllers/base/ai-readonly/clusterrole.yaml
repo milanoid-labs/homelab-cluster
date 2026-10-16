@@ -74,6 +74,10 @@ rules:
       - actions.github.com
       - argoproj.io
       - hub.traefik.io
+      # kubevirt.io only. Never subresources.kubevirt.io: it serves VMI console, vnc and
+      # portforward (exec-equivalent). VMIs must take cloud-init via secretRef, never inline
+      # userData, or reading them here would expose runner JIT tokens.
+      - kubevirt.io
       - monitoring.coreos.com
       - traefik.io
     resources: ["*"]

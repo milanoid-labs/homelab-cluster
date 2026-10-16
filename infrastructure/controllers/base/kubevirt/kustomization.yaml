@@ -1,0 +1,44 @@
+---
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+# KubeVirt v1.9.1. Officially supports k8s 1.34-1.36; the cluster runs 1.37 (accepted,
+# smoke-tested). Move to 1.10+ once it lists 1.37.
+resources:
+  - kubevirt-operator.yaml
+  - kubevirt-cr.yaml
+images:
+  - name: quay.io/kubevirt/virt-operator
+    newTag: v1.9.1
+    digest: sha256:a8adf7b772e9ce0bf7e2ce889910fc41ebadf552c9dbe843e9b86641e34f5df9
+patches:
+  # virt-operator deploys the other components itself and derives their images from
+  # VIRT_OPERATOR_IMAGE (a plain env string, which the images: transformer above doesn't
+  # touch). Pin every component it starts by digest instead.
+  - target:
+      kind: Deployment
+      name: virt-operator
+    patch: |-
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: virt-operator
+      spec:
+        template:
+          spec:
+            containers:
+              - name: virt-operator
+                env:
+                  # Digest only, no tag: the operator parses this string, and with a tag@digest form
+                  # it would derive "v1.9.1@sha256:<operator digest>" as the tag for components not
+                  # pinned below (export proxy, sidecar shim, ...). Digest-only makes it fall back
+                  # to KUBEVIRT_VERSION. The component images below are used verbatim.
+                  - name: VIRT_OPERATOR_IMAGE
+                    value: quay.io/kubevirt/virt-operator@sha256:a8adf7b772e9ce0bf7e2ce889910fc41ebadf552c9dbe843e9b86641e34f5df9
+                  - name: VIRT_API_IMAGE
+                    value: quay.io/kubevirt/virt-api:v1.9.1@sha256:d341c751dbe632d183989cce78203a888293e0e2a32719f32461bd6273322485
+                  - name: VIRT_CONTROLLER_IMAGE
+                    value: quay.io/kubevirt/virt-controller:v1.9.1@sha256:75c94c787eec15458729848e00fe0b421ca8998c6219de8c2d3cae72ff0bd287
+                  - name: VIRT_HANDLER_IMAGE
+                    value: quay.io/kubevirt/virt-handler:v1.9.1@sha256:c23b635ea4aff7f0779c6c061c431da0469c7796255e6de90a5970236b5ea61b
+                  - name: VIRT_LAUNCHER_IMAGE
+                    value: quay.io/kubevirt/virt-launcher:v1.9.1@sha256:53e6d12197761cda653201f82e295ac6098d689a58bc2c68df0970c248d61fa6
