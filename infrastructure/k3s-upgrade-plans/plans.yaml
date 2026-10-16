@@ -24,6 +24,9 @@ metadata:
 spec:
   concurrency: 1
   cordon: true
+  # kubevirt01 (Proxmox VM 300) is tainted so only KubeVirt runner VMs land there. The
+  # upgrade job must run on the node it upgrades, so without this toleration its pod stays
+  # Pending forever and the node silently keeps its old k3s version.
   tolerations:
     - key: homelab.milanoid.net/kubevirt-runners
       operator: Exists
