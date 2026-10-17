@@ -49,9 +49,9 @@ patches:
                   - name: VIRT_EXPORTSERVER_IMAGE
                     value: quay.io/kubevirt/virt-exportserver:v1.9.1@sha256:76c01dca74921eb5fd74d00b82e77a60d58e8213c72d84cc66a3bc92679690b8
                   - name: VIRT_TEMPLATE_APISERVER_IMAGE
-                    value: quay.io/kubevirt/virt-template-apiserver:v0.2.3@sha256:27defde24b4a4705d6096a86d134df0dc324243b56be8f0c057e1882c6da338b
+                    value: quay.io/kubevirt/virt-template-apiserver:v0.3.0@sha256:eaf118b2c1645c197f351c4aa0b56e49ace5c438530803b3ebcf390dc7b43731
                   - name: VIRT_TEMPLATE_CONTROLLER_IMAGE
-                    value: quay.io/kubevirt/virt-template-controller:v0.2.3@sha256:b45ac55de5fc9dbbee14974b45718c41eaed4d4979f92677dab3500598e33d22
+                    value: quay.io/kubevirt/virt-template-controller:v0.3.0@sha256:5313fe9a7364881a8afd9ac3afb764fa7d009e098f4180417ed3708c5bdf2efc
   # virt-operator isn't placed by the CR (it isn't created by itself), so mirror
   # spec.infra.nodePlacement here: one replica on an ordinary worker, off the busy single
   # control plane that upstream's default requires.
