@@ -12,3 +12,4 @@ resources:
   - ai-readonly
   - synology-csi
   - kubevirt
+  - kubevirt-runners

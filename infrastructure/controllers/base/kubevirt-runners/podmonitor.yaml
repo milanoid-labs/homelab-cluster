@@ -1,0 +1,17 @@
+---
+# gha_* (ARC-compatible, name="homelab-runners-vm") and kubevirt_scaleset_* metrics.
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  name: kubevirt-scaleset
+  namespace: kubevirt-runners
+  labels:
+    release: kube-prometheus-stack
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: kubevirt-scaleset
+  podMetricsEndpoints:
+    - port: metrics
+      path: /metrics
+      interval: 30s

@@ -1,0 +1,98 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kubevirt-scaleset
+  namespace: kubevirt-runners
+  labels:
+    app.kubernetes.io/name: kubevirt-scaleset
+spec:
+  replicas: 1
+  # GitHub allows one listener session per scale set: the old pod must be gone before the
+  # new one starts, which RollingUpdate would not guarantee.
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: kubevirt-scaleset
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: kubevirt-scaleset
+    spec:
+      serviceAccountName: kubevirt-scaleset
+      # Runs on the hpminis: kubevirt01's taint keeps it for the runner VMs.
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65532   # distroless nonroot
+        runAsGroup: 65532
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: scaler
+          image: ghcr.io/milanoid-labs/kubevirt-scaleset:20261018-5dbc844@sha256:0b8b698ba12d099bbfda4ebc5b60e0bf351dd530494228b4dac9aed5796e2522
+          env:
+            - name: SCALE_SET_NAME
+              value: homelab-runners-vm
+            - name: MIN_RUNNERS
+              value: "0"
+            # kubevirt01 has 12 GB: 2 VMs x (4Gi + ~270Mi virt-launcher overhead).
+            - name: MAX_RUNNERS
+              value: "2"
+            - name: NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            # Pulled by kubevirt01's containerd via its registries.yaml (Nexus, k8s-pull).
+            - name: VM_IMAGE
+              value: 192.168.1.204:8081/docker-hosted/homelab-runner-vm:20261018-f827303-9.1@sha256:90dd091e4b2e57aa3f1df3aa1dc88d708cb7bdc887861a9b3d3002e52de641fd
+            - name: GITHUB_APP_CLIENT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: github-app
+                  key: github_app_id
+            - name: GITHUB_APP_INSTALLATION_ID
+              valueFrom:
+                secretKeyRef:
+                  name: github-app
+                  key: github_app_installation_id
+            # The key as a file, never as an environment variable.
+            - name: GITHUB_APP_PRIVATE_KEY_FILE
+              value: /etc/github-app/github_app_private_key
+          ports:
+            - name: metrics
+              containerPort: 8080
+          # /healthz is served once the scale set is ready (GitHub reachable, App valid).
+          startupProbe:
+            httpGet:
+              path: /healthz
+              port: metrics
+            periodSeconds: 5
+            failureThreshold: 24
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: metrics
+            periodSeconds: 20
+          resources:
+            requests:
+              cpu: 20m
+              memory: 64Mi
+            limits:
+              memory: 256Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: [ALL]
+          volumeMounts:
+            - name: github-app
+              mountPath: /etc/github-app
+              readOnly: true
+      volumes:
+        - name: github-app
+          secret:
+            secretName: github-app
+            items:
+              - key: github_app_private_key
+                path: github_app_private_key

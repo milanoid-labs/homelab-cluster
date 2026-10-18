@@ -1,0 +1,7 @@
+---
+# The kubevirt-scaleset scaler, its runner VMIs and their cloud-init Secrets.
+# https://github.com/milanoid-labs/kubevirt-scaleset
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: kubevirt-runners
