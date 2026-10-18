@@ -1,0 +1,11 @@
+---
+# A backstop against a scaler bug creating VMs in a loop: MAX_RUNNERS (2) plus one VMI
+# that is finishing. Over it, the API refuses the VMI (the scaler rolls back and retries).
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: runner-vms
+  namespace: kubevirt-runners
+spec:
+  hard:
+    count/virtualmachineinstances.kubevirt.io: "3"

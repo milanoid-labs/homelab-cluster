@@ -1,0 +1,36 @@
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: kubevirt-scaleset
+  namespace: kubevirt-runners
+---
+# Namespaced on purpose: the scaler manages VMIs and Secrets in its own namespace only.
+# Verbs are exactly what the code calls (create, list, get, delete; patch sets a Secret's
+# owner). No VMI subresources (console, vnc), no other namespaces.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: kubevirt-scaleset
+  namespace: kubevirt-runners
+rules:
+  - apiGroups: [kubevirt.io]
+    resources: [virtualmachineinstances]
+    verbs: [get, list, create, delete]
+  - apiGroups: [""]
+    resources: [secrets]
+    verbs: [get, list, create, delete, patch]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: kubevirt-scaleset
+  namespace: kubevirt-runners
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: kubevirt-scaleset
+subjects:
+  - kind: ServiceAccount
+    name: kubevirt-scaleset
+    namespace: kubevirt-runners
