@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: sonarr
-          image: ghcr.io/hotio/sonarr:release-4.0.20.3014@sha256:fa72c412dac7f1cc261cb650a70c1ee2ff2a2db40c96c5782d732908ebdeb0b5
+          image: ghcr.io/hotio/sonarr:release-4.0.20.3014@sha256:e7e4d7c9e75b46a0fb0e570a0ea6e3dbee1ff97de2fbe59414bd92cfe50d7dfd
           envFrom:
             - configMapRef:
                 name: sonarr-configmap
