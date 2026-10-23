@@ -44,7 +44,7 @@ spec:
                 mountPath: /home/runner/tmpDir
         containers:
           - name: runner
-            image: ghcr.io/milanoid-labs/homelab-runner:20261023@sha256:7754aa393751ab6fa0237dc14eac27e1be7d5f9c9c645d003e40f523bdbce8eb
+            image: ghcr.io/milanoid-labs/homelab-runner:20261023@sha256:cb1c84316d610745aca992ef00c325c112602b36c8c76f2c6756741b4422bb3f
             command: ["/home/runner/run.sh"]
             env:
               - name: DOCKER_HOST
