@@ -37,7 +37,7 @@ spec:
       spec:
         initContainers:
           - name: init-dind-externals
-            image: ghcr.io/milanoid-labs/homelab-runner:20261007@sha256:af819ddc9910dc747181e72925d9f303f7f066e2c7752a6830ebcd67c48e4566
+            image: ghcr.io/milanoid-labs/homelab-runner:20261023@sha256:cb1c84316d610745aca992ef00c325c112602b36c8c76f2c6756741b4422bb3f
             command: ["cp", "-r", "-v", "/home/runner/externals/.", "/home/runner/tmpDir/"]
             volumeMounts:
               - name: dind-externals
