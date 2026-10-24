@@ -17,7 +17,7 @@ spec:
         kubernetes.io/hostname: hpmini02  # pinned: local-path PV lives on this node
       containers:
         - name: homarr
-          image: ghcr.io/homarr-labs/homarr:v2.8.0@sha256:f8d5a9db38320c013c9ce2ad0c19a8a171cd55f772884ea7860e5f3ccc012c2c
+          image: ghcr.io/homarr-labs/homarr:v2.8.2@sha256:21f5ef759181f74c6ad2bd3dbf2d0eb3b8a502ba04980703a2a82945447f58f5
           ports:
             - containerPort: 7575
           envFrom:
