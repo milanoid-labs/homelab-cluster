@@ -104,6 +104,25 @@
       automerge: false,
     },
     {
+      // Automerge minor and patch bumps once all checks are green. Renovate flips
+      // GitHub's native auto-merge (platformAutomerge defaults to true and "Allow
+      // auto-merge" is enabled on the repo), so GitHub merges in real time as gates
+      // pass -- important because the self-hosted CronJob runs only once a day and
+      // Renovate-performed merges are capped at one PR per target branch per run.
+      // matchCurrentVersion excludes pre-1.0 deps: semver allows 0.x to break on a
+      // "minor", so those stay manual. The pattern must account for our prefixed tag
+      // schemes (backend-v0.x.y / frontend-v0.x.y) and optional leading 'v' -- a bare
+      // !/^0/ would let those through. Digest-only bumps are type 'digest' and stay
+      // governed by the two rules above; first-time pin PRs are type 'pin' and never
+      // match here.
+      matchUpdateTypes: [
+        'minor',
+        'patch',
+      ],
+      matchCurrentVersion: '!/^(.*-)?v?0\\./',
+      automerge: true,
+    },
+    {
       matchManagers: [
         'flux',
       ],
@@ -128,6 +147,10 @@
       matchManagers: ['kustomize'],
       matchPackageNames: ['argoproj/argo-workflows'],
       groupName: 'argo-workflows',
+      // v3.x clears the pre-1.0 guard, but Argo has a history of breaking minor
+      // upgrades (controller/CRD/webhook behavior changes), so keep bumps manual.
+      // Must stay after the broad minor/patch automerge rule to win on rule order.
+      automerge: false,
     },
     {
       // spec.version in the k3s upgrade Plans is the single source of truth for the
@@ -138,6 +161,10 @@
       matchPackageNames: ['k3s-io/k3s'],
       pinDigests: false,
       groupName: 'k3s upgrade',
+      // A k3s bump triggers a node upgrade via system-upgrade-controller (control-plane
+      // reboots included), so even a semver 'patch' here is a cluster event -- keep it
+      // manual. Must stay after the broad minor/patch automerge rule to win on rule order.
+      automerge: false,
     },
     {
       // Same reason as the docker rule above: :semanticPrefixFixDepsChoreOthers would
