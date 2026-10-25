@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: pushgateway
-          image: prom/pushgateway:v1.11.4@sha256:00e7b33699bd23647e5a834d34bcfba11985f36ef631ddd1bd66e656a6ff7e2b
+          image: prom/pushgateway:v1.11.5@sha256:70aacee2b49a953bebec85d1043e45df17ead13a1d9e080d5cda735fe333c396
           ports:
             - containerPort: 9091
               name: metrics
