@@ -147,6 +147,10 @@
       matchManagers: ['kustomize'],
       matchPackageNames: ['argoproj/argo-workflows'],
       groupName: 'argo-workflows',
+      // v3.x clears the pre-1.0 guard, but Argo has a history of breaking minor
+      // upgrades (controller/CRD/webhook behavior changes), so keep bumps manual.
+      // Must stay after the broad minor/patch automerge rule to win on rule order.
+      automerge: false,
     },
     {
       // spec.version in the k3s upgrade Plans is the single source of truth for the
