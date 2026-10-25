@@ -110,14 +110,16 @@
       // pass -- important because the self-hosted CronJob runs only once a day and
       // Renovate-performed merges are capped at one PR per target branch per run.
       // matchCurrentVersion excludes pre-1.0 deps: semver allows 0.x to break on a
-      // "minor", so those stay manual. Digest-only bumps are type 'digest' and stay
+      // "minor", so those stay manual. The pattern must account for our prefixed tag
+      // schemes (backend-v0.x.y / frontend-v0.x.y) and optional leading 'v' -- a bare
+      // !/^0/ would let those through. Digest-only bumps are type 'digest' and stay
       // governed by the two rules above; first-time pin PRs are type 'pin' and never
       // match here.
       matchUpdateTypes: [
         'minor',
         'patch',
       ],
-      matchCurrentVersion: '!/^0/',
+      matchCurrentVersion: '!/^(.*-)?v?0\\./',
       automerge: true,
     },
     {
