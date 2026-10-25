@@ -15,7 +15,7 @@ spec:
         app: devops-study-app
     spec:
       containers:
-        - image: ghcr.io/milanoid-labs/study-app-api:backend-v0.2.18@sha256:3532b3626e047aa0a3b2074112c4385d9d7964fc3ecc7d3c383e343a773068bf
+        - image: ghcr.io/milanoid-labs/study-app-api:backend-v0.2.19@sha256:65927c6a608f8c976d6e0f11b531a4a5e09386e2df70edfefab22d16a565d30d
           name: devops-study-app-backend
           ports:
             - containerPort: 22112
