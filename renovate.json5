@@ -210,6 +210,20 @@
       automerge: true,
     },
     {
+      // Flux's bootstrap manifests are generated artifacts ('DO NOT EDIT') in which the
+      // component images and the CRDs must move atomically: each controller release is
+      // built against the CRDs shipped beside it. #761 bumped only the notification-controller
+      // image to v1.10.0, whose controller watches the v1 Provider/Alert kinds that the
+      // older CRDs do not serve -- cache sync timed out and the pod crashlooped (#764).
+      // Both managers hit this file: the kubernetes manager (our file patterns cover every
+      // *.yaml) and the flux manager (gotk-components.yaml is its native target). This
+      // catch-all rule sits after every automerge rule so it wins on rule order and
+      // disables the file for both. Flux upgrades go through `flux bootstrap`/
+      // `flux upgrade`, which regenerate CRDs and all component images in one commit.
+      matchFileNames: ['**/flux-system/gotk-components.yaml'],
+      enabled: false,
+    },
+    {
       versioning: 'regex:^release-(?<major>\\d+)\\.(?<minor>\\d+)\\.(?<patch>\\d+)(\\.(?<build>\\d+))?$',
       matchPackageNames: [
         '/^ghcr\\.io/hotio//',
