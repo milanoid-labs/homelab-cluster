@@ -5,6 +5,8 @@ on:
     branches: [main]
     paths:
       - 'runner/Dockerfile'
+      - 'scripts/runner-base-image.sh'
+      - '.github/workflows/build-runner-image.yml'
   workflow_dispatch:
 
 jobs:
@@ -15,6 +17,10 @@ jobs:
       packages: write
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+
+      - name: Resolve upstream actions-runner base image
+        id: base
+        run: bash scripts/runner-base-image.sh runner/Dockerfile >> "$GITHUB_OUTPUT"
 
       - name: Docker metadata
         id: meta
@@ -39,4 +45,13 @@ jobs:
           context: runner
           push: true
           tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
+          # metadata-action's labels: input replaces its whole default template, so we
+          # keep its defaults and append ours; for duplicate keys the last --label wins,
+          # letting title/description override the repo-derived defaults. base.* are the
+          # OCI-spec keys recording the upstream runner image we are built on.
+          labels: |
+            ${{ steps.meta.outputs.labels }}
+            org.opencontainers.image.title=homelab-runner
+            org.opencontainers.image.description=Self-hosted GitHub Actions runner image for ARC in homelab-cluster. Built on ${{ steps.base.outputs.base_name }} plus gh CLI and dirmngr.
+            org.opencontainers.image.base.name=${{ steps.base.outputs.base_name }}
+            org.opencontainers.image.base.digest=${{ steps.base.outputs.base_digest }}
