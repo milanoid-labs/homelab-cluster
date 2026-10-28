@@ -174,6 +174,15 @@
       semanticCommitType: 'fix',
     },
     {
+      // The runner image is only built by build-runner-image.yml, which is not a
+      // required check in the ruleset, so GitHub's native auto-merge would not wait
+      // for it. dirmngr is pinned to the base image's gpgconf, so a base bump can
+      // break the build. Let Renovate merge these itself instead: it only does so
+      // once every check on the branch, including the image build, is green.
+      matchFileNames: ['runner/Dockerfile'],
+      platformAutomerge: false,
+    },
+    {
       // spec.upgrade.image is deliberately left untagged so the tag follows
       // spec.version. Renovate must not touch it: adding a tag or a pinned digest
       // (pinDigests is true globally) would break that derivation and let the image
