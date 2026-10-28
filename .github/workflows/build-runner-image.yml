@@ -27,8 +27,11 @@ jobs:
           # Last FROM is the final stage; skip flags like --platform. Must be digest-pinned.
           ref=$(awk 'toupper($1)=="FROM" { for (i = 2; i <= NF; i++) if ($i !~ /^--/) { r = $i; break } } END { print r }' runner/Dockerfile)
           [[ $ref =~ ^(.+)@(sha256:[0-9a-f]{64})$ ]] || { echo "::error file=runner/Dockerfile::FROM is not digest-pinned: '$ref'"; exit 1; }
-          echo "name=${BASH_REMATCH[1]}" >> "$GITHUB_OUTPUT"
-          echo "digest=${BASH_REMATCH[2]}" >> "$GITHUB_OUTPUT"
+          {
+            echo "name=${BASH_REMATCH[1]}"
+            echo "version=${BASH_REMATCH[1]##*:}"
+            echo "digest=${BASH_REMATCH[2]}"
+          } >> "$GITHUB_OUTPUT"
 
       - name: Docker metadata
         id: meta
@@ -44,7 +47,7 @@ jobs:
           # Merged over metadata-action's repo-derived defaults (same key wins).
           labels: &oci-meta |
             org.opencontainers.image.title=homelab-runner
-            org.opencontainers.image.description=Self-hosted GitHub Actions runner for ARC in homelab-cluster, built on ${{ steps.base.outputs.name }}
+            org.opencontainers.image.description=actions-runner ${{ steps.base.outputs.version }} for ARC in homelab-cluster (base: ${{ steps.base.outputs.name }}@${{ steps.base.outputs.digest }})
             org.opencontainers.image.base.name=${{ steps.base.outputs.name }}
             org.opencontainers.image.base.digest=${{ steps.base.outputs.digest }}
           annotations: *oci-meta
