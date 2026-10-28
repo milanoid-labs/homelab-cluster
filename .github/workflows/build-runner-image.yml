@@ -5,6 +5,10 @@ on:
     branches: [main]
     paths:
       - 'runner/Dockerfile'
+  # Build-only on PRs, so a bad base/gh/dirmngr bump fails before it reaches main.
+  pull_request:
+    paths:
+      - 'runner/Dockerfile'
   workflow_dispatch:
 
 jobs:
@@ -16,17 +20,40 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
+      - name: Resolve base image from Dockerfile
+        id: base
+        shell: bash
+        run: |
+          # Last FROM is the final stage; skip flags like --platform. Must be digest-pinned.
+          ref=$(awk 'toupper($1)=="FROM" { for (i = 2; i <= NF; i++) if ($i !~ /^--/) { r = $i; break } } END { print r }' runner/Dockerfile)
+          [[ $ref =~ ^(.+)@(sha256:[0-9a-f]{64})$ ]] || { echo "::error file=runner/Dockerfile::FROM is not digest-pinned: '$ref'"; exit 1; }
+          {
+            echo "name=${BASH_REMATCH[1]}"
+            echo "version=${BASH_REMATCH[1]##*:}"
+            echo "digest=${BASH_REMATCH[2]}"
+          } >> "$GITHUB_OUTPUT"
+
       - name: Docker metadata
         id: meta
         uses: docker/metadata-action@dc802804100637a589fabce1cb79ff13a1411302 # v6
+        env:
+          DOCKER_METADATA_ANNOTATIONS_LEVELS: manifest,index
         with:
           images: ghcr.io/milanoid-labs/homelab-runner
           tags: |
             type=sha,prefix=
             type=raw,value=latest
             type=raw,value={{date 'YYYYMMDD'}}
+          # Merged over metadata-action's repo-derived defaults (same key wins).
+          labels: &oci-meta |
+            org.opencontainers.image.title=homelab-runner
+            org.opencontainers.image.description=actions-runner ${{ steps.base.outputs.version }} for ARC in homelab-cluster (base: ${{ steps.base.outputs.name }}@${{ steps.base.outputs.digest }})
+            org.opencontainers.image.base.name=${{ steps.base.outputs.name }}
+            org.opencontainers.image.base.digest=${{ steps.base.outputs.digest }}
+          annotations: *oci-meta
 
       - name: Log in to GHCR
+        if: github.event_name != 'pull_request'
         uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4
         with:
           registry: ghcr.io
@@ -37,6 +64,7 @@ jobs:
         uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7
         with:
           context: runner
-          push: true
+          push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+          annotations: ${{ steps.meta.outputs.annotations }}
