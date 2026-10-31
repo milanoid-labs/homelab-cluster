@@ -1,0 +1,114 @@
+---
+# A runner pod with /dev/kvm, for kubevirt-scaleset's VM image build (libguestfs boots a
+# helper VM: ~75 min under TCG emulation on homelab-runners, ~10-15 min with KVM).
+# virt-handler exposes kubevirt01's /dev/kvm as the extended resource devices.kubevirt.io/kvm;
+# requesting it mounts the device, no privileged runner needed (as for virt-launcher).
+#
+# kubevirt01 (11.7Gi allocatable) is shared with the runner VMs: 2 x (4Gi + ~270Mi
+# virt-launcher overhead) + ~350Mi DaemonSets leaves ~2.8Gi. The pod requests 2.25Gi so it
+# fits next to both VMs, and arc-runners-preemptible lets a VM that doesn't fit evict it.
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: homelab-runners-kvm
+  namespace: arc-runners
+spec:
+  interval: 30m
+  # Same as homelab-runners: the controller must finish upgrading before this chart is.
+  dependsOn:
+    - name: arc-controller
+      namespace: arc-systems
+  chart:
+    spec:
+      chart: gha-runner-scale-set
+      version: "0.15.1"
+      sourceRef:
+        kind: HelmRepository
+        name: actions-runner-controller
+        namespace: arc-systems
+      interval: 12h
+  install:
+    crds: Create
+  upgrade:
+    crds: CreateReplace
+    remediation:
+      retries: 3
+  driftDetection:
+    mode: enabled
+  values:
+    githubConfigUrl: "https://github.com/milanoid-labs"
+    githubConfigSecret: github-app
+    minRunners: 0
+    maxRunners: 1
+    template:
+      spec:
+        priorityClassName: arc-runners-preemptible
+        nodeSelector:
+          homelab.milanoid.net/kubevirt-runners: "true"
+        tolerations:
+          - key: homelab.milanoid.net/kubevirt-runners
+            operator: Exists
+            effect: NoSchedule
+        initContainers:
+          - name: init-dind-externals
+            image: ghcr.io/milanoid-labs/homelab-runner:20261023@sha256:cb1c84316d610745aca992ef00c325c112602b36c8c76f2c6756741b4422bb3f
+            command: ["cp", "-r", "-v", "/home/runner/externals/.", "/home/runner/tmpDir/"]
+            volumeMounts:
+              - name: dind-externals
+                mountPath: /home/runner/tmpDir
+        containers:
+          - name: runner
+            image: ghcr.io/milanoid-labs/homelab-runner:20261023@sha256:cb1c84316d610745aca992ef00c325c112602b36c8c76f2c6756741b4422bb3f
+            command: ["/home/runner/run.sh"]
+            env:
+              - name: DOCKER_HOST
+                value: unix:///var/run/docker.sock
+            # libguestfs runs here: a 2Gi helper VM (LIBGUESTFS_MEMSIZE, virt-customize
+            # --smp 2) plus QEMU and guestfs-tools around it. Extended resources go in
+            # limits only; the request is set to match.
+            resources:
+              requests:
+                cpu: "500m"
+                memory: "2Gi"
+              limits:
+                cpu: "2"
+                memory: "3Gi"
+                devices.kubevirt.io/kvm: "1"
+            volumeMounts:
+              - name: work
+                mountPath: /home/runner/_work
+              - name: dind-sock
+                mountPath: /var/run
+          - name: dind
+            image: docker:29.9.2-dind@sha256:9e79b879b177fbd72c34376a3dd3d91747da5db49e1f560f76aea59561471977
+            args:
+              - dockerd
+              - --host=unix:///var/run/docker.sock
+              - --group=$(DOCKER_GROUP_GID)
+            env:
+              - name: DOCKER_GROUP_GID
+                value: "123"
+            # Only packs the finished disk into the containerDisk image.
+            resources:
+              requests:
+                cpu: "50m"
+                memory: "256Mi"
+              limits:
+                cpu: "1"
+                memory: "1Gi"
+            securityContext:
+              privileged: true
+            volumeMounts:
+              - name: work
+                mountPath: /home/runner/_work
+              - name: dind-sock
+                mountPath: /var/run
+              - name: dind-externals
+                mountPath: /home/runner/externals
+        volumes:
+          - name: work
+            emptyDir: {}
+          - name: dind-sock
+            emptyDir: {}
+          - name: dind-externals
+            emptyDir: {}
