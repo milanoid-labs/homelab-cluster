@@ -1,0 +1,14 @@
+---
+# Below the default (0) that every other pod has, so on kubevirt01 a runner VM's
+# virt-launcher pod that doesn't fit preempts the homelab-runners-kvm build pod instead of
+# waiting for it. preemptionPolicy Never: the build pod waits for room, it never evicts.
+apiVersion: scheduling.k8s.io/v1
+kind: PriorityClass
+metadata:
+  name: arc-runners-preemptible
+value: -100
+preemptionPolicy: Never
+globalDefault: false
+description: >-
+  ARC runner pods whose jobs nobody waits on (the VM image build); any default-priority
+  pod may preempt them.

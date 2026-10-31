@@ -76,4 +76,5 @@ flux logs
 - `hpmini01` (control plane), `hpmini02`, `hpmini03`: HP EliteDesk Minis (12-16 GB RAM, not uniform).
 - `kubevirt01`: Proxmox VM 300 (4 vCPU, 12 GB, nested KVM), reserved for KubeVirt runner VMs by the taint
   `homelab.milanoid.net/kubevirt-runners=true:NoSchedule`. Anything that must run on every node (upgrade
-  plans, monitoring DaemonSets) needs a toleration for it. Rebuild steps: `scripts/proxmox/kubevirt01.md`.
+  plans, monitoring DaemonSets) needs a toleration for it. The one other tenant is the `homelab-runners-kvm`
+  ARC scale set (one pod with `/dev/kvm`, for kubevirt-scaleset's VM image build), which the VMs can preempt. Rebuild steps: `scripts/proxmox/kubevirt01.md`.
