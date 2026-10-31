@@ -11,3 +11,6 @@ data:
   GITHUB_APP_ID: "3219089"
   GITHUB_INSTALLATION_ID: "119949905"
   LOG_LEVEL: "debug"
+  # postUpgradeTasks a repo may run. kubevirt-scaleset: rewrites the SHA-256 pins next to the
+  # versions Renovate bumps in vm-image/ (argument: the dependency's name).
+  RENOVATE_ALLOWED_COMMANDS: '["^vm-image/update-checksums\\.sh [a-z/.-]+$"]'
