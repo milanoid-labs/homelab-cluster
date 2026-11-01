@@ -54,7 +54,8 @@
     {
       // KubeVirt's virt-operator starts the other components itself, so their images are
       // plain env strings in a kustomize patch, which no built-in manager reads. Track
-      // them here so they move with the operator image in the same 'kubevirt' group.
+      // them here: the virt-* core images move with the operator image in the 'kubevirt'
+      // group; virt-template-* follows its own capped line (packageRules below).
       customType: 'regex',
       managerFilePatterns: [
         '/infrastructure/controllers/base/kubevirt/kustomization\\.yaml$/',
@@ -200,13 +201,31 @@
       enabled: false,
     },
     {
-      // A KubeVirt upgrade is the operator image (kustomize images:) plus four component
-      // digests (custom.regex above) plus the vendored manifest. One PR, merged by hand.
-      matchPackageNames: ['quay.io/kubevirt/**'],
+      // A KubeVirt upgrade is the operator image (kustomize images:) plus six v1.x
+      // component digests (custom.regex above) plus the vendored manifest. One PR, merged
+      // by hand. The images inherit distroless's source label, so point Renovate at the
+      // real repo for release notes.
+      matchPackageNames: ['quay.io/kubevirt/**', '!quay.io/kubevirt/virt-template-*'],
       groupName: 'kubevirt',
+      sourceUrl: 'https://github.com/kubevirt/kubevirt',
       automerge: false,
       prBodyNotes: [
-        '⚠️ Before merging: replace `infrastructure/controllers/base/kubevirt/kubevirt-operator.yaml` with the new release asset, update the digest-only `VIRT_OPERATOR_IMAGE` in the patch, and check the k8s support matrix (kubevirt/sig-release).',
+        '⚠️ Before merging: replace `infrastructure/controllers/base/kubevirt/kubevirt-operator.yaml` with the new release asset, update the digest-only `VIRT_OPERATOR_IMAGE` in the patch, and check the k8s support matrix (kubevirt/sig-release). On a new minor, also move the virt-template-* images and the `allowedVersions` cap in renovate.json5 to the minor that release pins in `hack/virt-template/default.sh`.',
+      ],
+    },
+    {
+      // virt-template-* is on its own v0.x line, and each KubeVirt release pins one minor
+      // of it (v1.9 -> 0.2, v1.10 -> 0.3). The operator applies that minor's
+      // CRDs/RBAC/webhooks and only swaps the images, so cap the images to it. Without the
+      // cap Renovate proposed v0.3.0 for the v1.9.1 operator (#692) and skipped v0.2.4.
+      // Raise it together with the operator's minor.
+      matchPackageNames: ['quay.io/kubevirt/virt-template-*'],
+      allowedVersions: '<0.3.0',
+      groupName: 'virt-template',
+      sourceUrl: 'https://github.com/kubevirt/virt-template',
+      automerge: false,
+      prBodyNotes: [
+        '⚠️ virt-template is deployed by virt-operator, which applies the manifests of the minor its release pins. Check the version matches `hack/virt-template/default.sh` on the KubeVirt release branch in use.',
       ],
     },
     {
