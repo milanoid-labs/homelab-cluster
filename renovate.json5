@@ -229,6 +229,43 @@
       ],
     },
     {
+      // gotk-components.yaml is a generated Flux bundle: each controller image is built
+      // against the CRDs shipped beside it. The kubernetes manager (widened to every *.yaml
+      // above) bumped single controller images without the CRDs, and #761 crashlooped
+      // notification-controller v1.10.0 on CRDs that didn't serve its v1 kinds (#764).
+      // Stop the kubernetes manager's version bumps here; Flux versions move only through
+      // the flux manager's fluxcd/flux2 PR below, which regenerates the whole bundle.
+      // Digest pins stay on: the flux manager writes tag-only images, and the kubernetes
+      // manager's pin PR (#791) is what restores the digests after a regen.
+      matchManagers: ['kubernetes'],
+      matchFileNames: ['**/gotk-components.yaml'],
+      matchUpdateTypes: ['major', 'minor', 'patch'],
+      enabled: false,
+    },
+    {
+      // A Flux release changes CRDs, RBAC and all four controllers at once (#788), so it is
+      // a control-plane upgrade even on a semver 'minor'. Keep it manual. Must stay after
+      // the broad minor/patch automerge rule to win on rule order.
+      matchManagers: ['flux'],
+      matchPackageNames: ['fluxcd/flux2'],
+      automerge: false,
+      prBodyNotes: [
+        '⚠️ Flux control-plane upgrade. Check the release notes for removed API versions: CRDs that drop a version still listed in `status.storedVersions` fail to apply until the objects are migrated (`flux migrate`). After merging, merge the follow-up digest pin PR for the controller images.',
+      ],
+    },
+    {
+      // system-upgrade-controller is vendored as two release assets, crd.yaml and
+      // controller.yaml, but Renovate only sees the image in controller.yaml, so a bump
+      // leaves the Plan CRD behind (#338, #428 and #561 never touched it). Same failure
+      // mode as the Flux bundle above, so keep these bumps manual.
+      matchManagers: ['kubernetes'],
+      matchPackageNames: ['rancher/system-upgrade-controller'],
+      automerge: false,
+      prBodyNotes: [
+        '⚠️ Before merging: replace `infrastructure/controllers/base/system-upgrade-controller/crd.yaml` (and `controller.yaml`, if upstream changed RBAC or flags) with this release\'s assets from rancher/system-upgrade-controller.',
+      ],
+    },
+    {
       matchPackageNames: [
         'renovate/renovate',
       ],
