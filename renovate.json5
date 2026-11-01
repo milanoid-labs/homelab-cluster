@@ -248,5 +248,16 @@
         'ghcr.io/milanoid-labs/study-app-api',
       ],
     },
+    {
+      // The kubevirt-scaleset scaler is tagged YYYYMMDD-<sha7> (its scaler.yaml workflow).
+      // Default docker versioning reads the -<sha7> as a compatibility suffix and only
+      // compares tags with the same suffix, so a new build (new sha) never matched and
+      // the pin never moved. Parse the date as the version instead; the sha is ignored.
+      // Two builds on the same day compare equal, so the later one waits for the next day.
+      matchPackageNames: [
+        'ghcr.io/milanoid-labs/kubevirt-scaleset',
+      ],
+      versioning: 'regex:^(?<major>\\d{4})(?<minor>\\d{2})(?<patch>\\d{2})-[0-9a-f]{7}$',
+    },
   ],
 }
