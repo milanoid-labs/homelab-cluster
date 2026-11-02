@@ -24,24 +24,43 @@ spec:
   values:
     configs:
       cm:
-        # Local account for the Hermes DevOps agent (argocd-cm key; capabilities:
-        # interactive login + API tokens). RBAC role bound in configs.rbac below.
-        accounts.hermes: login,apiKey
+        # Local account for the Hermes DevOps agent: API tokens only, no
+        # interactive login. RBAC role bound in configs.rbac below.
+        accounts.hermes: apiKey
+        # Syncing to a revision other than the app's targetRevision requires the
+        # `override` privilege (upstream-recommended; default flips in next major).
+        application.sync.requireOverridePrivilegeForRevisionSync: "true"
         ui.bannercontent: "Hello Milanoid!"
         timeout.reconciliation: 180s
         statusbadge.enabled: "true"
         # Required by KSOPS: it is a kustomize exec (KRM) plugin, which is still alpha.
         kustomize.buildOptions: "--enable-alpha-plugins --enable-exec"
       rbac:
-        # Least privilege for role:hermes — read all apps (needed for diff),
-        # sync + logs only in the default project. No create/update/delete.
+        # role:hermes — read apps/projects/clusters (app get/diff need the
+        # project; cluster list/diff --local need clusters) and sync apps in
+        # the default project.
+        # Caveats:
+        # - every app currently lives in `default`, so default/* means all apps
+        #   (a dedicated AppProject would be the real boundary);
+        # - sync can prune and also allows terminate-op on running syncs;
+        # - app-of-apps is denied: syncing it can replace/cascade-delete the
+        #   child Applications;
+        # - logs scope is not isolation: the ai-readonly SA reads pods/log
+        #   cluster-wide.
+        # Deny wins over allow in Argo CD RBAC.
         policy.csv: |
           p, role:hermes, applications, get, */*, allow
+          p, role:hermes, projects, get, *, allow
+          p, role:hermes, clusters, get, *, allow
           p, role:hermes, applications, sync, default/*, allow
+          p, role:hermes, applications, sync, default/app-of-apps, deny
           p, role:hermes, logs, get, default/*, allow
           g, hermes, role:hermes
       params:
         server.insecure: true
+        # Reject API sync requests with Replace=true (kubectl replace --force);
+        # no app here uses it. Resource-level annotations still apply.
+        server.sync.replace.allowed: "false"
     dex:
       enabled: false
     server:
