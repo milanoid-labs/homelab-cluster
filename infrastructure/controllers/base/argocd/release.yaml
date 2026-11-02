@@ -24,11 +24,22 @@ spec:
   values:
     configs:
       cm:
+        # Local account for the Hermes DevOps agent (argocd-cm key; capabilities:
+        # interactive login + API tokens). RBAC role bound in configs.rbac below.
+        accounts.hermes: login,apiKey
         ui.bannercontent: "Hello Milanoid!"
         timeout.reconciliation: 180s
         statusbadge.enabled: "true"
         # Required by KSOPS: it is a kustomize exec (KRM) plugin, which is still alpha.
         kustomize.buildOptions: "--enable-alpha-plugins --enable-exec"
+      rbac:
+        # Least privilege for role:hermes — read all apps (needed for diff),
+        # sync + logs only in the default project. No create/update/delete.
+        policy.csv: |
+          p, role:hermes, applications, get, */*, allow
+          p, role:hermes, applications, sync, default/*, allow
+          p, role:hermes, logs, get, default/*, allow
+          g, hermes, role:hermes
       params:
         server.insecure: true
     dex:
