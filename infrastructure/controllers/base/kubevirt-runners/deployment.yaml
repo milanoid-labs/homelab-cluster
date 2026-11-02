@@ -45,7 +45,7 @@ spec:
                   fieldPath: metadata.namespace
             # Pulled by kubevirt01's containerd via its registries.yaml (Nexus, k8s-pull).
             - name: VM_IMAGE
-              value: 192.168.1.204:8081/docker-hosted/homelab-runner-vm:20261031-75bd70e-18.1@sha256:8959ff9258cdf790a12c0408ccf9f78daf4aaef53cbbb483722659d8ccd90227
+              value: 192.168.1.204:8081/docker-hosted/homelab-runner-vm:20261102-90045d7-22.1@sha256:fa5b27f61e22133f1b1d21f6de41cc385d952f9d90942b3fe0869d578d7d2e38
             - name: GITHUB_APP_CLIENT_ID
               valueFrom:
                 secretKeyRef:
