@@ -1,0 +1,88 @@
+# Publishes dtrack.milanoid.net through its own Cloudflare Tunnel, following
+# the per-app pattern (see headlamp's cloudflare.yaml): cloudflared connects
+# out to Cloudflare, so nothing needs to be exposed on the home network.
+#
+# DependencyTrack's SPA calls same-origin /api (the chart ships API_BASE_URL
+# empty), so one hostname must fan out to two services: path rules are
+# evaluated top-to-bottom, hence /api before the catch-all.
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cloudflared
+spec:
+  selector:
+    matchLabels:
+      app: cloudflared
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: cloudflared
+    spec:
+      containers:
+        - name: cloudflared
+          image: cloudflare/cloudflared:2026.10.7@sha256:4955524aeaa379e154023d5a027c250f7b35041a2e7e950cf13f144bc9b9c5ba
+          args:
+            - tunnel
+            - --config
+            - /etc/cloudflared/config/config.yaml
+            - run
+          ports:
+            - containerPort: 2000
+              name: metrics
+              protocol: TCP
+          # Sized from 7d observed usage (p95 17-30Mi, max 18-30Mi)
+          resources:
+            requests:
+              cpu: "10m"
+              memory: "32Mi"
+            limits:
+              memory: "96Mi"
+          livenessProbe:
+            httpGet:
+              path: /ready
+              port: 2000
+            failureThreshold: 1
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          volumeMounts:
+            - name: config
+              mountPath: /etc/cloudflared/config
+              readOnly: true
+            - name: creds
+              mountPath: /etc/cloudflared/creds
+              readOnly: true
+      volumes:
+        - name: creds
+          secret:
+            secretName: dtrack-tunnel-credentials
+        - name: config
+          configMap:
+            name: cloudflared
+            items:
+              - key: config.yaml
+                path: config.yaml
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cloudflared
+data:
+  config.yaml: |
+    tunnel: dtrack
+
+    credentials-file: /etc/cloudflared/creds/credentials.json
+
+    metrics: 0.0.0.0:2000
+    no-autoupdate: true
+
+    ingress:
+    - hostname: dtrack.milanoid.net
+      path: ^/api(/.*)?$
+      service: http://dependencytrack-dependency-track-api-server:8080
+
+    - hostname: dtrack.milanoid.net
+      service: http://dependencytrack-dependency-track-frontend:8080
+
+    - service: http_status:404

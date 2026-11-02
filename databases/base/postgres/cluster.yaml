@@ -1,6 +1,8 @@
 ---
 # Shared PostgreSQL server for homelab apps. Each app gets its own role and database on
-# it (managed.roles + a Database resource) rather than its own Cluster.
+# it (standalone DatabaseRole + Database CRs, see dtrack/) rather than its own Cluster.
+# Standalone CRs over Cluster.spec.managed.roles: no shared-spec edit per app, and CNPG
+# treats a role declared in both places as a conflict (inline spec wins, CR reports it).
 #
 # Apps connect to postgres-rw.databases.svc.cluster.local:5432 (read-write, always the
 # primary). postgres-ro / postgres-r exist too but only matter once instances > 1.

@@ -1,0 +1,22 @@
+---
+# DependencyTrack's login role on the shared postgres cluster, managed
+# declaratively through a standalone DatabaseRole CR. Its password comes from the
+# basic-auth secret dtrack-app (staging overlay, SOPS-encrypted), which must live
+# in this same namespace and carry cnpg.io/reload=true so password edits apply
+# immediately (docs: declarative_role_management.md, password rotation).
+#
+# Deliberately NOT Cluster.spec.managed.roles: a standalone DatabaseRole is
+# self-contained (no shared cluster-spec edit per app), and defining a role in
+# both places is a conflict — the inline spec wins and the CR reports it.
+apiVersion: postgresql.cnpg.io/v1
+kind: DatabaseRole
+metadata:
+  name: dtrack
+spec:
+  ensure: present
+  cluster:
+    name: postgres
+  name: dtrack
+  login: true
+  passwordSecret:
+    name: dtrack-app

@@ -79,6 +79,23 @@
       ],
       datasourceTemplate: 'docker',
     },
+    {
+      // DependencyTrack's wait-for-postgres initContainer image sits in the HelmRelease's
+      // values, but as a raw Kubernetes container spec (the chart passes initContainers
+      // through verbatim) -- not the image:{repository,tag} shape the flux manager's
+      // helm-values-style extraction reads, and kind: HelmRelease is no workload for the
+      // kubernetes manager. Track it here. 'docker' versioning keeps the -alpine suffix:
+      // only -alpine rebuilds of 18.x are compared, so 'latest' and versionless tags stay out.
+      customType: 'regex',
+      managerFilePatterns: [
+        '/^apps/base/dependencytrack/release\\.yaml$/',
+      ],
+      matchStrings: [
+        'image: (?<depName>postgres):(?<currentValue>[^\\s@]+)@(?<currentDigest>sha256:[a-f0-9]+)',
+      ],
+      datasourceTemplate: 'docker',
+      versioningTemplate: 'docker',
+    },
   ],
   packageRules: [
     {

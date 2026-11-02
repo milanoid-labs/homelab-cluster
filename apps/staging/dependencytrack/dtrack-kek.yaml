@@ -1,0 +1,27 @@
+# DependencyTrack KEK: AES key encrypting DT-stored secrets (API keys, vulnerabilities
+# sources credentials) inside Postgres (secretManagement.provider: database). Losing
+# this key makes every stored secret unreadable — reset them in the DT UI.
+# The chart expects the Base64-encoded key under key "kek".
+apiVersion: v1
+kind: Secret
+metadata:
+    name: dtrack-kek
+    namespace: dependencytrack
+type: Opaque
+stringData:
+    kek: ENC[AES256_GCM,data:pLzvhP3gmWuMCc0Gj4mstg09hjC+k775ZdEjM6jAu8AaKfaaGIg+piRcPPo=,iv:V5utVsrRmireKQjYBAVAPFV0TdRvev5g/BYuVldWVuA=,tag:FLCb9QZq7qYBvrr4RXYdNA==,type:str]
+sops:
+    age:
+        - enc: |
+            -----BEGIN AGE ENCRYPTED FILE-----
+            YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBYWFhpdEdyWnc1WGdHMnVB
+            bnRFcktwRzFGd1R1YmR4clZBN1lGaFVLTjJNCnhjbE9lNmFKOWtOeS8vZnJTMy95
+            MkYrVzBUaHJyWW04WGRzUzZ1b294MEUKLS0tIGF6cWJhbUhDVHc3OUViU2RLYTNU
+            MHRoMkRpWnFwdm14R2ExNHpjVlI5VDgKTSjRuXWdBKQAxWR0Lv/8dSZfAKfTwUF3
+            7biLsm11BPHpP+MnN3aTYWRZfhTY5AcofSP4hnvBv0hpBj6ft0fTAQ==
+            -----END AGE ENCRYPTED FILE-----
+          recipient: age1jnfhet7cj900tg9f0dwgqktjwux4km4hen8gnevpujm5260sayesujm92y
+    encrypted_regex: ^(data|stringData)$
+    lastmodified: "2026-11-02T21:46:14Z"
+    mac: ENC[AES256_GCM,data:NkCInsk3qOavIyLaoF1UXJzpSgVrbmdrjMyr3Ma23IdA9djHiVreWwhtREmvPRapF2qoMEsN9iOs4QD0HceNqYUrZ8uJmmuyh+0U5o8IHgbC7YL0Vy16XxCIArImLWR6/yD+BWiajsWm3ZSELTsV16hMwP7jbThRul/cR/86kHY=,iv:j3IgqsuiIu6Go2gV+2BwMSaCuCWEO/oezr7gXz2LTTY=,tag:rIlt79qG8jG87pVHKXKYXg==,type:str]
+    version: 3.13.3

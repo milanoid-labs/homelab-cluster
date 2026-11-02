@@ -1,0 +1,103 @@
+---
+# DependencyTrack — SBOM/Vulnerability management (https://dependencytrack.org).
+#
+# The upstream chart carries no database: point database.jdbcUrl at an existing
+# Postgres. Here that is the shared CloudNativePG cluster (databases/), where a
+# dedicated dtrack role/database was provisioned via DatabaseRole + Database CRs.
+# Chart docs: https://github.com/DependencyTrack/helm-charts (dependency-track).
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: dependencytrack
+  namespace: dependencytrack
+spec:
+  interval: 30m
+  chart:
+    spec:
+      chart: dependency-track
+      version: "2.9.0"
+      sourceRef:
+        kind: HelmRepository
+        name: dependencytrack
+        namespace: dependencytrack
+      interval: 12h
+  install:
+    remediation:
+      retries: 3
+  upgrade:
+    remediation:
+      retries: 1
+  driftDetection:
+    mode: enabled
+  values:
+    # Shared-cluster Postgres. -rw service always targets the primary; the app
+    # only ever writes. Credentials come from the basic-auth Secret dtrack-app
+    # (staging overlay, SOPS), mounted as files by the chart.
+    database:
+      jdbcUrl: "jdbc:postgresql://postgres-rw.databases.svc.cluster.local:5432/dtrack?reWriteBatchedInserts=true"
+      existingSecret:
+        name: dtrack-app
+    # KEK encrypting DT-stored secrets inside Postgres (API keys, feed creds).
+    # Losing it = every stored secret unreadable; the SOPS blob in git is the
+    # only backup, keep it safe.
+    secretManagement:
+      provider: database
+      database:
+        kek:
+          existingSecret:
+            name: dtrack-kek
+    # One file-storage PVC on the NAS (single replica, so RWO is fine). Chart
+    # default 10Gi is generous for homelab SBOMs.
+    fileStorage:
+      local:
+        size: 5Gi
+        storageClassName: synology-iscsi
+    apiServer:
+      # Single deployment doing web+worker+scheduler work (chart default); the
+      # separate web/worker topology is for scale, not needed here.
+      web:
+        resources:
+          # Chart default is 500m/2Gi request+limit — DT 5.x is Java, this keeps
+          # it usable while halving the reservation. First start runs all DB
+          # migrations; the chart's startup probe allows up to 30m.
+          requests:
+            cpu: 250m
+            memory: 1Gi
+          limits:
+            memory: 2Gi
+      initContainers:
+        # Gate on Postgres being reachable so a missing DB/role surfaces as a
+        # waiting initContainer instead of a CrashLooping apiserver. DT's own
+        # image has no shell, so borrow pg_isready from the alpine client.
+        - name: wait-for-postgres
+          image: postgres:18-alpine@sha256:10a5c69a83035ab5239f5620d708520e8b28f5aa1f2b20143e6024532edadfb5
+          command:
+            - pg_isready
+            - -h
+            - postgres-rw.databases.svc.cluster.local
+            - -p
+            - "5432"
+            - -U
+            - dtrack
+            - -d
+            - dtrack
+          resources:
+            requests:
+              cpu: 10m
+              memory: 16Mi
+            limits:
+              memory: 64Mi
+    frontend:
+      # Same-host ingress below, so the SPA keeps relative /api URLs (chart
+      # renders runtime config with an empty apiBaseUrl).
+      resources:
+        requests:
+          cpu: 50m
+          memory: 64Mi
+        limits:
+          memory: 128Mi
+    ingress:
+      # Disabled: this repo publishes apps through per-app cloudflared tunnels
+      # (see staging overlay cloudflare.yaml), not cluster Ingresses, so the
+      # chart's ingress has nothing to bind to.
+      enabled: false
