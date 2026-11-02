@@ -23,8 +23,17 @@ K3s Kubernetes homelab cluster managed via **GitOps with Flux CD**. All changes 
 | `monitoring.yaml` | `./monitoring/` | kube-prometheus-stack (HelmRelease) |
 | `persistent-volumes.yaml` | `./persistent-volumes/staging` | NFS PV definitions |
 | `workflows.yaml` | `./workflows/staging` | Argo Workflows/CronWorkflows |
+| `databases.yaml` | `./databases/staging` | CloudNativePG Postgres clusters (`dependsOn: infrastructure-controllers` for the CRDs) |
 
-All have `interval: 1m0s` and `prune: true`. Most also have SOPS decryption enabled, except `monitoring.yaml`'s `monitoring-controllers` Kustomization (no secrets needed there).
+All have `interval: 1m0s` and `prune: true`, except `infrastructure.yaml` (`10m0s`, because it pulls upstream git). Most also have SOPS decryption enabled, except `monitoring.yaml`'s `monitoring-controllers` Kustomization (no secrets needed there).
+
+### Shared PostgreSQL (CloudNativePG)
+
+- Operator: HelmRelease in `infrastructure/controllers/base/cloudnative-pg/` (namespace `cnpg-system`).
+- One shared `Cluster` named `postgres` in namespace `databases` (`databases/base/postgres/`), 1 instance on `synology-iscsi`, `enablePDB: false` so node drains aren't blocked. Apps connect to `postgres-rw.databases.svc.cluster.local:5432`.
+- Apps don't get their own Cluster. Each gets a role (`spec.managed.roles`, password from a SOPS secret in `databases`) and a `Database` resource owned by that role.
+- Renovate tracks `imageName:` through a regex custom manager. Postgres minors automerge; majors (offline `pg_upgrade`) and operator chart bumps (0.x) stay manual.
+- Backups to S3 aren't set up yet (issue #814).
 
 ### Secrets Management
 

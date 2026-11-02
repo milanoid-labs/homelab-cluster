@@ -56,7 +56,8 @@ jobs:
             monitoring/controllers/staging \
             monitoring/configs/staging \
             persistent-volumes/staging \
-            workflows/staging; do
+            workflows/staging \
+            databases/staging; do
             echo "--- Validating $overlay ---"
             # kubeconform mis-splits very large multi-doc YAML (e.g. Argo Workflows CRDs)
             # when reading from stdin, so build to a temp file and pass that instead.
