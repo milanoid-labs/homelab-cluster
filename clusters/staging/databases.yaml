@@ -1,0 +1,24 @@
+---
+# Postgres clusters run by the CloudNativePG operator (infrastructure-controllers). Kept
+# out of that Kustomization because a Cluster can't be applied until the operator's CRDs
+# exist; dependsOn makes the ordering explicit on a fresh bootstrap.
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: databases
+  namespace: flux-system
+spec:
+  dependsOn:
+    - name: infrastructure-controllers
+  interval: 1m0s
+  retryInterval: 1m
+  timeout: 5m
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+  path: ./databases/staging
+  prune: true
+  decryption:
+    provider: sops
+    secretRef:
+      name: sops-age

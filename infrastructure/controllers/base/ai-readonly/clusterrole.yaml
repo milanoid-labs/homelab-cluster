@@ -79,6 +79,8 @@ rules:
       # userData, or reading them here would expose runner JIT tokens.
       - kubevirt.io
       - monitoring.coreos.com
+      # CloudNativePG. Cluster/Database/Pooler only reference Secrets by name.
+      - postgresql.cnpg.io
       - traefik.io
     resources: ["*"]
     verbs: [get, list, watch]
