@@ -41,7 +41,7 @@ spec:
 
           containers:
             - name: renovate
-              image: renovate/renovate:44.167.5@sha256:c33150ec6407624a9399a2d827fd125becafdbe4519d7584488cbdd17f99081e
+              image: renovate/renovate:44.199.2@sha256:0538f498be1b074e2434f8449cab7b2be30f8c0d0baf3b72814010f19db5bcfb
               command: ["/bin/sh", "-c"]
               args:
                 - export RENOVATE_TOKEN=$(cat /shared/token) && renovate milanoid-labs/homelab-cluster milanoid-labs/devops-study-app milanoid-labs/home-dashboard milanoid-labs/kubevirt-scaleset
