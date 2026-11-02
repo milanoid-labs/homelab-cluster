@@ -13,3 +13,4 @@ resources:
   - synology-csi
   - kubevirt
   - kubevirt-runners
+  - cloudnative-pg
