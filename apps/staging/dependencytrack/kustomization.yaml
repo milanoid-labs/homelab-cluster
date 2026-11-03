@@ -7,6 +7,6 @@ resources:
   # DB credentials + KEK (SOPS-encrypted).
   - dtrack-app.yaml
   - dtrack-kek.yaml
-  # LAN/VPN only: reachable at https://dependencytrack.milanoid.net through the chart's
+  # LAN/VPN only: reachable at http://dependencytrack.milanoid.net through the chart's
   # Traefik ingress (apps/base/dependencytrack/release.yaml). Deliberately no
   # Cloudflare tunnel; if one is ever added, change the admin password over LAN first.
