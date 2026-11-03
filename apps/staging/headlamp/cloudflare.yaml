@@ -13,9 +13,21 @@ spec:
       labels:
         app: cloudflared
     spec:
+      # cloudflared's image already runs as 65532 (distroless nonroot); pin it so
+      # the convention (non-root, explicit runAsUser) holds regardless of the image.
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65532
+        runAsGroup: 65532
       containers:
         - name: cloudflared
           image: cloudflare/cloudflared:2026.10.7@sha256:4955524aeaa379e154023d5a027c250f7b35041a2e7e950cf13f144bc9b9c5ba
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
           args:
             - tunnel
             - --config
