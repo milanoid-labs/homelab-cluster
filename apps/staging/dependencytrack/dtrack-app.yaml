@@ -1,8 +1,11 @@
 # App-side copy of the CNPG basic-auth Secret (same username/password as
 # databases/dtrack-app; CNPG passwordSecret is namespace-local, so the app reads its
 # own). Consumed by the HelmRelease as database.existingSecret, mounted as files.
-# Rotating means changing both copies and reconciling: DatabaseRole reloads the role,
-# HelmRelease restarts the pods.
+# Rotating means changing both copies (check they match afterwards, see
+# databases/staging/dtrack/dtrack-app.yaml), then restarting the api-server by hand:
+#   kubectl -n dependencytrack rollout restart deploy/dependencytrack-dependency-track-api-server
+# CNPG applies the new role password at once, but DT reads the credential files only at
+# startup and a Secret edit doesn't change the HelmRelease values, so nothing restarts it.
 apiVersion: v1
 kind: Secret
 metadata:

@@ -18,6 +18,21 @@ spec:
     name: flux-system
   path: ./databases/staging
   prune: true
+  # Ready only once every role and database has actually been applied in Postgres, so
+  # app Kustomizations that dependsOn this one (e.g. dependencytrack) don't start an app
+  # whose login role doesn't exist yet. CNPG's DatabaseRole/Database report
+  # status.applied rather than conditions, hence the CEL expressions.
+  wait: true
+  healthCheckExprs:
+    - apiVersion: postgresql.cnpg.io/v1
+      kind: Cluster
+      current: has(status.conditions) && status.conditions.exists(c, c.type == 'Ready' && c.status == 'True')
+    - apiVersion: postgresql.cnpg.io/v1
+      kind: DatabaseRole
+      current: has(status.applied) && status.applied && status.observedGeneration == metadata.generation
+    - apiVersion: postgresql.cnpg.io/v1
+      kind: Database
+      current: has(status.applied) && status.applied && status.observedGeneration == metadata.generation
   decryption:
     provider: sops
     secretRef:

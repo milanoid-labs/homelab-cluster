@@ -4,6 +4,9 @@
 # The upstream chart carries no database: point database.jdbcUrl at an existing
 # Postgres. Here that is the shared CloudNativePG cluster (databases/), where a
 # dedicated dtrack role/database was provisioned via DatabaseRole + Database CRs.
+# Startup ordering is enforced by Flux, not in the pod: this app has its own Flux
+# Kustomization (clusters/staging/dependencytrack.yaml) that dependsOn `databases`,
+# which only goes Ready once the dtrack role and database are applied.
 # Chart docs: https://github.com/DependencyTrack/helm-charts (dependency-track).
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
@@ -12,6 +15,10 @@ metadata:
   namespace: dependencytrack
 spec:
   interval: 30m
+  # Match the chart's 30-minute startup-probe budget for schema migrations (first
+  # install and appVersion upgrades). Helm's 5-minute default fires first otherwise,
+  # and remediation would kill the pod mid-migration.
+  timeout: 30m
   chart:
     spec:
       chart: dependency-track
@@ -24,9 +31,12 @@ spec:
   install:
     remediation:
       retries: 3
+  # No upgrade remediation: a rollback would put the old DT image back on a schema
+  # that the new one has already migrated forward. A failed upgrade stays failed for
+  # a human to look at.
   upgrade:
     remediation:
-      retries: 1
+      retries: 0
   driftDetection:
     mode: enabled
   values:
@@ -57,39 +67,18 @@ spec:
       # separate web/worker topology is for scale, not needed here.
       web:
         resources:
-          # Chart default is 500m/2Gi request+limit — DT 5.x is Java, this keeps
-          # it usable while halving the reservation. First start runs all DB
-          # migrations; the chart's startup probe allows up to 30m.
+          # Memory request = limit, as the chart ships it: the JVM sizes its heap
+          # from the limit, so a lower request would make the pod Burstable and the
+          # first eviction candidate under node memory pressure. First start runs
+          # all DB migrations; the chart's startup probe allows up to 30m.
           requests:
             cpu: 250m
-            memory: 1Gi
+            memory: 2Gi
           limits:
             memory: 2Gi
-      initContainers:
-        # Gate on Postgres being reachable so a missing DB/role surfaces as a
-        # waiting initContainer instead of a CrashLooping apiserver. DT's own
-        # image has no shell, so borrow pg_isready from the alpine client.
-        - name: wait-for-postgres
-          image: postgres:18-alpine@sha256:10a5c69a83035ab5239f5620d708520e8b28f5aa1f2b20143e6024532edadfb5
-          command:
-            - pg_isready
-            - -h
-            - postgres-rw.databases.svc.cluster.local
-            - -p
-            - "5432"
-            - -U
-            - dtrack
-            - -d
-            - dtrack
-          resources:
-            requests:
-              cpu: 10m
-              memory: 16Mi
-            limits:
-              memory: 64Mi
     frontend:
-      # Same-host ingress below, so the SPA keeps relative /api URLs (chart
-      # renders runtime config with an empty apiBaseUrl).
+      # Same-host ingress below (and the tunnel), so the SPA keeps relative /api
+      # URLs (chart renders runtime config with an empty apiBaseUrl).
       resources:
         requests:
           cpu: 50m
@@ -97,7 +86,9 @@ spec:
         limits:
           memory: 128Mi
     ingress:
-      # Disabled: this repo publishes apps through per-app cloudflared tunnels
-      # (see staging overlay cloudflare.yaml), not cluster Ingresses, so the
-      # chart's ingress has nothing to bind to.
-      enabled: false
+      # LAN/VPN access through Traefik, like the other apps' ingress.yaml. The chart
+      # routes /api to the api-server and / to the frontend. The public hostname
+      # dtrack.milanoid.net goes through the Cloudflare tunnel (staging overlay).
+      enabled: true
+      ingressClassName: traefik
+      hostname: dependencytrack.milanoid.net

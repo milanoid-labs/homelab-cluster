@@ -79,23 +79,6 @@
       ],
       datasourceTemplate: 'docker',
     },
-    {
-      // DependencyTrack's wait-for-postgres initContainer image sits in the HelmRelease's
-      // values, but as a raw Kubernetes container spec (the chart passes initContainers
-      // through verbatim) -- not the image:{repository,tag} shape the flux manager's
-      // helm-values-style extraction reads, and kind: HelmRelease is no workload for the
-      // kubernetes manager. Track it here. 'docker' versioning keeps the -alpine suffix:
-      // only -alpine rebuilds of 18.x are compared, so 'latest' and versionless tags stay out.
-      customType: 'regex',
-      managerFilePatterns: [
-        '/^apps/base/dependencytrack/release\\.yaml$/',
-      ],
-      matchStrings: [
-        'image: (?<depName>postgres):(?<currentValue>[^\\s@]+)@(?<currentDigest>sha256:[a-f0-9]+)',
-      ],
-      datasourceTemplate: 'docker',
-      versioningTemplate: 'docker',
-    },
   ],
   packageRules: [
     {
@@ -283,6 +266,19 @@
       matchFileNames: ['**/gotk-components.yaml'],
       matchUpdateTypes: ['major', 'minor', 'patch'],
       enabled: false,
+    },
+    {
+      // A dependency-track chart bump can raise DependencyTrack's appVersion, which runs
+      // schema migrations against the shared Postgres (no backups yet, #814). The chart
+      // README asks for the upgrade notes to be read first, so keep these manual even
+      // though the chart is past 1.0. Must stay after the broad minor/patch automerge
+      // rule to win on rule order.
+      matchManagers: ['flux'],
+      matchPackageNames: ['dependency-track'],
+      automerge: false,
+      prBodyNotes: [
+        '⚠️ DependencyTrack upgrade: if `appVersion` changes, read the DT upgrade guide and the chart\'s UPGRADING.md first. Migrations run against the shared Postgres; take a `pg_dump` of the `dtrack` database before merging while #814 (backups) is open.',
+      ],
     },
     {
       // A Flux release changes CRDs, RBAC and all four controllers at once (#788), so it is

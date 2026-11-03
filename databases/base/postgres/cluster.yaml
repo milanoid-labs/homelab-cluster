@@ -13,7 +13,7 @@ metadata:
   namespace: databases
 spec:
   # No bootstrap block: initdb creates a database and owner both named "app" (credentials
-  # in Secret postgres-app). Apps don't use it; they get their own via managed.roles.
+  # in Secret postgres-app). Apps don't use it; they get their own via DatabaseRole CRs.
   #
   # One instance: the iSCSI volume follows the pod to any node, so a node loss or drain
   # costs a restart (~30-60s), not the data. Raise to 2 for a streaming replica with

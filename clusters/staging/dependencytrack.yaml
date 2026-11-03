@@ -1,0 +1,25 @@
+---
+# DependencyTrack gets its own Flux Kustomization instead of a line in apps/staging so it
+# can wait for its database: `databases` only goes Ready once the dtrack role and
+# database are applied (healthCheckExprs there), so the api-server never starts against
+# a missing role. Same pattern for any app on the shared Postgres.
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: dependencytrack
+  namespace: flux-system
+spec:
+  dependsOn:
+    - name: databases
+  interval: 1m0s
+  retryInterval: 1m
+  timeout: 5m
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+  path: ./apps/staging/dependencytrack
+  prune: true
+  decryption:
+    provider: sops
+    secretRef:
+      name: sops-age

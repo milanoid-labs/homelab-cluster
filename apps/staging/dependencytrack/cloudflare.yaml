@@ -14,12 +14,23 @@ spec:
   selector:
     matchLabels:
       app: cloudflared
-  replicas: 1
+  # Two replicas for HA (CLAUDE.md): both connect to the same tunnel, so a restart or
+  # node drain doesn't take dtrack.milanoid.net down. Spread across nodes when possible.
+  replicas: 2
   template:
     metadata:
       labels:
         app: cloudflared
     spec:
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                topologyKey: kubernetes.io/hostname
+                labelSelector:
+                  matchLabels:
+                    app: cloudflared
       containers:
         - name: cloudflared
           image: cloudflare/cloudflared:2026.10.7@sha256:4955524aeaa379e154023d5a027c250f7b35041a2e7e950cf13f144bc9b9c5ba

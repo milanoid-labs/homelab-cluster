@@ -2,7 +2,11 @@
 # carrying username/password keys. Same Secret value is mirrored into the
 # dependencytrack namespace for the app itself — CNPG passwordSecret is
 # namespace-local, so the copy is deliberate. cnpg.io/reload=true makes the
-# operator re-apply ALTER ROLE on password edits (no pod restart needed).
+# operator re-apply ALTER ROLE on password edits (no Postgres restart needed; the
+# DependencyTrack api-server does need one, see the app-side copy). Nothing syncs the
+# two copies, so after editing either, check they match without printing them:
+#   for f in databases/staging/dtrack/dtrack-app.yaml apps/staging/dependencytrack/dtrack-app.yaml; do
+#     sops -d --extract '["stringData"]' "$f" | shasum -a 256; done
 apiVersion: v1
 kind: Secret
 metadata:

@@ -14,5 +14,4 @@ resources:
   - pihole
   - homarr
   - headlamp
-  - dependencytrack
   - pushgateway
