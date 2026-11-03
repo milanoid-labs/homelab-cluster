@@ -8,6 +8,11 @@
 # Kustomization (clusters/staging/dependencytrack.yaml) that dependsOn `databases`,
 # which only goes Ready once the dtrack role and database are applied.
 # Chart docs: https://github.com/DependencyTrack/helm-charts (dependency-track).
+#
+# This deploys DependencyTrack itself. What lives inside it (teams, permissions, later
+# projects, policies and settings) is OpenTofu in
+# https://github.com/milanoid-labs/dependencytrack-config-terraform. Change managed
+# objects there, not in the UI: the next apply reverts UI edits to anything it manages.
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
