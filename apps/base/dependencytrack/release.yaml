@@ -1,0 +1,94 @@
+---
+# DependencyTrack — SBOM/Vulnerability management (https://dependencytrack.org).
+#
+# The upstream chart carries no database: point database.jdbcUrl at an existing
+# Postgres. Here that is the shared CloudNativePG cluster (databases/), where a
+# dedicated dtrack role/database was provisioned via DatabaseRole + Database CRs.
+# Startup ordering is enforced by Flux, not in the pod: this app has its own Flux
+# Kustomization (clusters/staging/dependencytrack.yaml) that dependsOn `databases`,
+# which only goes Ready once the dtrack role and database are applied.
+# Chart docs: https://github.com/DependencyTrack/helm-charts (dependency-track).
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: dependencytrack
+  namespace: dependencytrack
+spec:
+  interval: 30m
+  # Match the chart's 30-minute startup-probe budget for schema migrations (first
+  # install and appVersion upgrades). Helm's 5-minute default fires first otherwise,
+  # and remediation would kill the pod mid-migration.
+  timeout: 30m
+  chart:
+    spec:
+      chart: dependency-track
+      version: "2.9.0"
+      sourceRef:
+        kind: HelmRepository
+        name: dependencytrack
+        namespace: dependencytrack
+      interval: 12h
+  install:
+    remediation:
+      retries: 3
+  # No upgrade remediation: a rollback would put the old DT image back on a schema
+  # that the new one has already migrated forward. A failed upgrade stays failed for
+  # a human to look at.
+  upgrade:
+    remediation:
+      retries: 0
+  driftDetection:
+    mode: enabled
+  values:
+    # Shared-cluster Postgres. -rw service always targets the primary; the app
+    # only ever writes. Credentials come from the basic-auth Secret dtrack-app
+    # (staging overlay, SOPS), mounted as files by the chart.
+    database:
+      jdbcUrl: "jdbc:postgresql://postgres-rw.databases.svc.cluster.local:5432/dtrack?reWriteBatchedInserts=true"
+      existingSecret:
+        name: dtrack-app
+    # KEK encrypting DT-stored secrets inside Postgres (API keys, feed creds).
+    # Losing it = every stored secret unreadable; the SOPS blob in git is the
+    # only backup, keep it safe.
+    secretManagement:
+      provider: database
+      database:
+        kek:
+          existingSecret:
+            name: dtrack-kek
+    # One file-storage PVC on the NAS (single replica, so RWO is fine). Chart
+    # default 10Gi is generous for homelab SBOMs.
+    fileStorage:
+      local:
+        size: 5Gi
+        storageClassName: synology-iscsi
+    apiServer:
+      # Single deployment doing web+worker+scheduler work (chart default); the
+      # separate web/worker topology is for scale, not needed here.
+      web:
+        resources:
+          # Memory request = limit, as the chart ships it: the JVM sizes its heap
+          # from the limit, so a lower request would make the pod Burstable and the
+          # first eviction candidate under node memory pressure. First start runs
+          # all DB migrations; the chart's startup probe allows up to 30m.
+          requests:
+            cpu: 250m
+            memory: 2Gi
+          limits:
+            memory: 2Gi
+    frontend:
+      # Same-host ingress below (and the tunnel), so the SPA keeps relative /api
+      # URLs (chart renders runtime config with an empty apiBaseUrl).
+      resources:
+        requests:
+          cpu: 50m
+          memory: 64Mi
+        limits:
+          memory: 128Mi
+    ingress:
+      # LAN/VPN access through Traefik, like the other apps' ingress.yaml. The chart
+      # routes /api to the api-server and / to the frontend. The public hostname
+      # dtrack.milanoid.net goes through the Cloudflare tunnel (staging overlay).
+      enabled: true
+      ingressClassName: traefik
+      hostname: dependencytrack.milanoid.net

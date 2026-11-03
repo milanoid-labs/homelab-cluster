@@ -1,0 +1,32 @@
+# App-side copy of the CNPG basic-auth Secret (same username/password as
+# databases/dtrack-app; CNPG passwordSecret is namespace-local, so the app reads its
+# own). Consumed by the HelmRelease as database.existingSecret, mounted as files.
+# Rotating means changing both copies (check they match afterwards, see
+# databases/staging/dtrack/dtrack-app.yaml), then restarting the api-server by hand:
+#   kubectl -n dependencytrack rollout restart deploy/dependencytrack-dependency-track-api-server
+# CNPG applies the new role password at once, but DT reads the credential files only at
+# startup and a Secret edit doesn't change the HelmRelease values, so nothing restarts it.
+apiVersion: v1
+kind: Secret
+metadata:
+    name: dtrack-app
+    namespace: dependencytrack
+type: kubernetes.io/basic-auth
+stringData:
+    username: ENC[AES256_GCM,data:heiVgRnI,iv:vH9u+mnd5AgCfOHDO1guX1bMatfJmhUeetRe9mA0vYg=,tag:ehrW1Zk5a3S7j4gvx0ZZjQ==,type:str]
+    password: ENC[AES256_GCM,data:pKqxt0imWIPKX0AKfUcsozCGYSrTKCd9Ek7mjFL12sE=,iv:1Lz+efPR6XtyeR0xtFgColWMe+VK0X660L1at3L33RM=,tag:C6GuSiz3om1CZkU63K7uqA==,type:str]
+sops:
+    age:
+        - enc: |
+            -----BEGIN AGE ENCRYPTED FILE-----
+            YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBqMktWVmg0bzhXWExlRkpQ
+            K1VDeUEwK3pHT3FBS3NTYWVwUWZwcjNWVnpJClpsZHVlWGp6RVN4a2RhSmJmbC9M
+            amJmRXdwenBicDBFNnZPRGgwNG5oUFEKLS0tIHlqODY0dFR6MEFTVTd4Tmg3VkU5
+            bHlyWmZKcStLNUJFSmJ2QUdVL0FDU2sKUJ8+7k20coUUPlHDr4OoRRQgHcim890D
+            xuSOyZo4e6D9yR/h/ZSXqMHCxMy3Bsa6WCzERYP9r8XpgwI2kA8IVQ==
+            -----END AGE ENCRYPTED FILE-----
+          recipient: age1jnfhet7cj900tg9f0dwgqktjwux4km4hen8gnevpujm5260sayesujm92y
+    encrypted_regex: ^(data|stringData)$
+    lastmodified: "2026-11-02T21:46:14Z"
+    mac: ENC[AES256_GCM,data:HueczW9BXBXeeXa76R8O1tU4QMdfUwv63MIQo5XFrCFWfF4s3ujb4CpEstfJeZuIPG4SdCy/SHUlETHUbTHNPeOIfCReuzskYGC2TeVTZzGgI370IbQfGXVngvyG23k+25MmruASsg+jl254CdIo3rnIvQDGbvV8jt6cHMDJWkQ=,iv:ahSEQULasgRahjVk/WRuaZ5c4lglaJwAJ47bnyJuogI=,tag:CtXXN5Iu2SWD8j3GQtjd9g==,type:str]
+    version: 3.13.3

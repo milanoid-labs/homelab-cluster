@@ -23,7 +23,8 @@ K3s Kubernetes homelab cluster managed via **GitOps with Flux CD**. All changes 
 | `monitoring.yaml` | `./monitoring/` | kube-prometheus-stack (HelmRelease) |
 | `persistent-volumes.yaml` | `./persistent-volumes/staging` | NFS PV definitions |
 | `workflows.yaml` | `./workflows/staging` | Argo Workflows/CronWorkflows |
-| `databases.yaml` | `./databases/staging` | CloudNativePG Postgres clusters (`dependsOn: infrastructure-controllers` for the CRDs) |
+| `databases.yaml` | `./databases/staging` | CloudNativePG Postgres clusters (`dependsOn: infrastructure-controllers` for the CRDs; `wait: true` + `healthCheckExprs`, so it's Ready only once every role/database is applied) |
+| `dependencytrack.yaml` | `./apps/staging/dependencytrack` | DependencyTrack, split out of `apps` so it can `dependsOn: databases` |
 
 All have `interval: 1m0s` and `prune: true`, except `infrastructure.yaml` (`10m0s`, because it pulls upstream git). Most also have SOPS decryption enabled, except `monitoring.yaml`'s `monitoring-controllers` Kustomization (no secrets needed there).
 
@@ -31,7 +32,9 @@ All have `interval: 1m0s` and `prune: true`, except `infrastructure.yaml` (`10m0
 
 - Operator: HelmRelease in `infrastructure/controllers/base/cloudnative-pg/` (namespace `cnpg-system`).
 - One shared `Cluster` named `postgres` in namespace `databases` (`databases/base/postgres/`), 1 instance on `synology-iscsi`, `enablePDB: false` so node drains aren't blocked. Apps connect to `postgres-rw.databases.svc.cluster.local:5432`.
-- Apps don't get their own Cluster. Each gets a role (`spec.managed.roles`, password from a SOPS secret in `databases`) and a `Database` resource owned by that role.
+- Apps don't get their own Cluster. Each gets a standalone `DatabaseRole` CR (password from a basic-auth SOPS secret in `databases` with `cnpg.io/reload=true`) and a `Database` CR owned by that role, under `databases/base/<app>/`. Don't use `Cluster.spec.managed.roles`: CNPG treats a role declared in both places as a conflict. Example: `databases/base/dtrack/`.
+- The app needs its own copy of the credentials secret in its namespace (CNPG secrets are namespace-local). Nothing syncs the two copies; rotating means editing both and restarting the app.
+- An app on the shared Postgres gets its own Flux Kustomization in `clusters/staging/<app>.yaml` with `dependsOn: databases` (not a line in `apps/staging/kustomization.yaml`), so it never starts before its role exists.
 - Renovate tracks `imageName:` through a regex custom manager. Postgres minors automerge; majors (offline `pg_upgrade`) and operator chart bumps (0.x) stay manual.
 - Backups to S3 aren't set up yet (issue #814).
 
@@ -58,7 +61,7 @@ Some apps use both with different hostnames (e.g., Linkding: `linkding.milanoid.
 
 1. Create `apps/base/<app>/` with deployment.yaml, service.yaml, storage.yaml, namespace.yaml, kustomization.yaml
 2. Create `apps/staging/<app>/` with kustomization.yaml (referencing `../../base/<app>`), ingress.yaml, optional secrets and cloudflare.yaml
-3. Register in `apps/staging/kustomization.yaml`
+3. Register in `apps/staging/kustomization.yaml` (or, for an app on the shared Postgres, give it its own Flux Kustomization; see Shared PostgreSQL above)
 
 ### Updating an application image
 

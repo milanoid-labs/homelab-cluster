@@ -1,0 +1,11 @@
+---
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+# Same shared namespace as the postgres Cluster; the operator resolves
+# spec.cluster.name inside it.
+namespace: databases
+resources:
+  # Role before database: the Database owner must exist when the operator
+  # issues CREATE DATABASE.
+  - databaseroles.yaml
+  - database.yaml

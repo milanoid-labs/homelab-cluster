@@ -1,0 +1,14 @@
+---
+# DependencyTrack's own database on the shared postgres cluster, created by the
+# operator and owned by the dtrack role (see databaseroles.yaml; the role is
+# reconciled first so the owner exists before CREATE DATABASE runs).
+apiVersion: postgresql.cnpg.io/v1
+kind: Database
+metadata:
+  name: dtrack
+spec:
+  ensure: present
+  cluster:
+    name: postgres
+  name: dtrack
+  owner: dtrack
