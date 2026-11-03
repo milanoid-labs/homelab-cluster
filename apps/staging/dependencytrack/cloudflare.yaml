@@ -14,9 +14,7 @@ spec:
   selector:
     matchLabels:
       app: cloudflared
-  # Two replicas for HA (CLAUDE.md): both connect to the same tunnel, so a restart or
-  # node drain doesn't take dtrack.milanoid.net down. Spread across nodes when possible.
-  replicas: 2
+  replicas: 1
   template:
     metadata:
       labels:
