@@ -77,7 +77,7 @@ spec:
           limits:
             memory: 2Gi
     frontend:
-      # Same-host ingress below (and the tunnel), so the SPA keeps relative /api
+      # Same-host ingress below, so the SPA keeps relative /api
       # URLs (chart renders runtime config with an empty apiBaseUrl).
       resources:
         requests:
@@ -86,9 +86,9 @@ spec:
         limits:
           memory: 128Mi
     ingress:
-      # LAN/VPN access through Traefik, like the other apps' ingress.yaml. The chart
-      # routes /api to the api-server and / to the frontend. The public hostname
-      # dtrack.milanoid.net goes through the Cloudflare tunnel (staging overlay).
+      # LAN/VPN-only access through Traefik, like the other apps' ingress.yaml (DNS:
+      # milanoid-net-terraform traefik_records). The chart routes /api to the
+      # api-server and / to the frontend. No public hostname on purpose.
       enabled: true
       ingressClassName: traefik
       hostname: dependencytrack.milanoid.net
