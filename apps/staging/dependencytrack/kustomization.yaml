@@ -7,19 +7,6 @@ resources:
   # DB credentials + KEK (SOPS-encrypted).
   - dtrack-app.yaml
   - dtrack-kek.yaml
-  # Cloudflare Tunnel publishing dtrack.milanoid.net.
-  - cloudflare.yaml
-  #
-  # Add dtrack-tunnel-credentials.yaml here once the tunnel exists in Cloudflare and
-  # its credentials JSON is SOPS-encrypted:
-  #   cloudflared tunnel create dtrack
-  #   cloudflared tunnel route dns dtrack dtrack.milanoid.net
-  #   kubectl create secret generic dtrack-tunnel-credentials -n dependencytrack \
-  #     --from-file=credentials.json="$HOME/.cloudflared/<TUNNEL_ID>.json" \
-  #     --dry-run=client -o yaml > apps/staging/dependencytrack/dtrack-tunnel-credentials.yaml
-  #   sops --encrypt --in-place apps/staging/dependencytrack/dtrack-tunnel-credentials.yaml
-  #
-  # BEFORE uncommenting: DependencyTrack starts with the default login admin/admin.
-  # Log in over LAN first (https://dependencytrack.milanoid.net, Traefik ingress) and
-  # set a real admin password, or anyone reaching the public hostname first owns it.
-  # - dtrack-tunnel-credentials.yaml
+  # LAN/VPN only: reachable at https://dependencytrack.milanoid.net through the chart's
+  # Traefik ingress (apps/base/dependencytrack/release.yaml). Deliberately no
+  # Cloudflare tunnel; if one is ever added, change the admin password over LAN first.
