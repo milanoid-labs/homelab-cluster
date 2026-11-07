@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: radarr
-          image: ghcr.io/hotio/radarr:release-6.4.4.10685@sha256:69916cd9f53ab7510e2af1d9ca6eb58626ae128b874d63c390844ba884514b69
+          image: ghcr.io/hotio/radarr:release-6.4.4.10685@sha256:647739a4986843ce9b73048425e4427772f867ed272fd512e73c6ec67c5ef5cf
           envFrom:
             - configMapRef:
                 name: radarr-configmap
