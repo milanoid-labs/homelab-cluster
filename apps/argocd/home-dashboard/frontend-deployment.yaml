@@ -15,7 +15,7 @@ spec:
         app: home-dashboard-frontend
     spec:
       containers:
-        - image: ghcr.io/milanoid-labs/home-dashboard-web:frontend-v0.2.23@sha256:474949a4cad59c72181417389fa868aefe5e759f6002a23d4dea9caced396a3b
+        - image: ghcr.io/milanoid-labs/home-dashboard-web:frontend-v0.2.24@sha256:a4dc1ff04acdf716cc88c22224f1b22edeb0d748ab13c02b46589445e92798a5
           name: home-dashboard-frontend
           ports:
             - containerPort: 8080
