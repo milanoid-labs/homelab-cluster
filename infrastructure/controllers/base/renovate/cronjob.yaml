@@ -44,7 +44,7 @@ spec:
               image: renovate/renovate:44.222.5@sha256:8a4c49ef19bb71bedf4eaa4d1087a31a1793bd53de41478753d2d648e53eed19
               command: ["/bin/sh", "-c"]
               args:
-                - export RENOVATE_TOKEN=$(cat /shared/token) && renovate milanoid-labs/homelab-cluster milanoid-labs/devops-study-app milanoid-labs/home-dashboard milanoid-labs/kubevirt-scaleset milanoid-labs/dependencytrack-config-terraform
+                - export RENOVATE_TOKEN=$(cat /shared/token) && renovate milanoid-labs/homelab-cluster milanoid-labs/devops-study-app milanoid-labs/home-dashboard milanoid-labs/kubevirt-scaleset milanoid-labs/dependencytrack-config-terraform milanoid-labs/milanoid-hetzner-terraform
 
               envFrom:
                 - configMapRef:
