@@ -30,7 +30,7 @@ spec:
           type: RuntimeDefault
       containers:
         - name: scaler
-          image: ghcr.io/milanoid-labs/kubevirt-scaleset:20261111-b7202b9@sha256:7078a375293c9ca7161565b1c2f4cc9acba386f1da6bb0c93c6b2d5db3f905e2
+          image: ghcr.io/milanoid-labs/kubevirt-scaleset:20261112-c890010@sha256:5b762115570553f2067f9d3fd3bd8eb84e410797726076254f4837fc01e62978
           env:
             - name: SCALE_SET_NAME
               value: homelab-runners-vm
