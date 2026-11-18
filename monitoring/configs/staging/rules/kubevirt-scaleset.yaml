@@ -1,0 +1,47 @@
+---
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: kubevirt-scaleset-rules
+  labels:
+    release: kube-prometheus-stack
+spec:
+  groups:
+    - name: kubevirt-scaleset
+      rules:
+        # The PodMonitor lives in kubevirt-runners; absent() also fires when the target
+        # disappears from Prometheus altogether, which `up == 0` would miss.
+        - alert: KubevirtScalesetDown
+          expr: absent(up{job="kubevirt-runners/kubevirt-scaleset"} == 1)
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "kubevirt-scaleset scaler is down or not scraped for 5m"
+            description: "No VM runners get provisioned meanwhile. Check `kubectl -n kubevirt-runners get pods` and the PodMonitor."
+        # The window is shorter than `for` on purpose: with equal values a single burst
+        # would hold the expression true for exactly `for` and fire only at the edge. The
+        # reaper retries every 30s, so a persistent fault shows up in every 5m window.
+        # increase() ignores the first increment of a counter that appears already at 1
+        # (the scaler creates the {operation} series on the first error), so one lone error
+        # is invisible here by design.
+        - alert: KubevirtScalesetErrors
+          expr: sum by (operation) (increase(kubevirt_scaleset_errors_total[5m])) > 0
+          for: 15m
+          labels:
+            severity: warning
+          annotations:
+            summary: "kubevirt-scaleset keeps hitting errors in {{ $labels.operation }}"
+            description: "The scaler logged and retried errors for 15m. Check `kubectl -n kubevirt-runners logs deploy/kubevirt-scaleset`."
+        # A runner that never came online leaves the scale set registered below its minimum.
+        # Only meaningful for sets with a min above zero: with min 0 this can't fire. Today
+        # that is the ARC `homelab-runners` pool (minRunners 1); the VM scaler and
+        # homelab-runners-kvm both run with min 0. The hints below cover both kinds.
+        - alert: RunnerScaleSetBelowMin
+          expr: gha_registered_runners < gha_min_runners
+          for: 15m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Scale set {{ $labels.name }} has fewer registered runners than its minimum for 15m"
+            description: "A runner never came online. For an ARC set (homelab-runners) check `kubectl -n arc-runners get pods` and the listener in arc-systems. For homelab-runners-vm check `kubectl -n kubevirt-runners get vmi` and the scaler logs."

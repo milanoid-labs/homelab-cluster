@@ -5,3 +5,4 @@ resources:
   - rules.yaml
   - flux.yaml
   - proxmox.yaml
+  - kubevirt-scaleset.yaml

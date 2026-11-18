@@ -34,3 +34,10 @@ spec:
     - portNumber: 8080
       path: /metrics
       interval: 30s
+      # ARC's job metrics (gha_*_jobs_total, gha_job_*_duration_seconds) carry no scale
+      # set label, only the gauges have `name`. Add `scale_set` from the listener pod so
+      # the dashboard can filter every gha_* panel the same way. Not `name`: a target
+      # label of that name would turn the gauges' own into `exported_name`.
+      relabelings:
+        - sourceLabels: [__meta_kubernetes_pod_label_actions_github_com_scale_set_name]
+          targetLabel: scale_set

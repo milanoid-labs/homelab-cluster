@@ -8,7 +8,7 @@
   ],
   "timezone": "browser",
   "schemaVersion": 39,
-  "version": 1,
+  "version": 2,
   "editable": true,
   "graphTooltip": 1,
   "refresh": "30s",
@@ -29,6 +29,36 @@
         },
         "hide": 0,
         "refresh": 1
+      },
+      {
+        "name": "scale_set",
+        "label": "Scale set",
+        "type": "query",
+        "datasource": {
+          "type": "prometheus",
+          "uid": "${datasource}"
+        },
+        "query": {
+          "query": "label_values(gha_desired_runners, name)",
+          "refId": "scale_set"
+        },
+        "definition": "label_values(gha_desired_runners, name)",
+        "multi": true,
+        "includeAll": true,
+        "allValue": ".*",
+        "current": {
+          "selected": true,
+          "text": [
+            "All"
+          ],
+          "value": [
+            "$__all"
+          ]
+        },
+        "refresh": 2,
+        "sort": 1,
+        "hide": 0,
+        "description": "Gauge panels filter by the gha_* `name` label, job panels by the `scale_set` target label the PodMonitors add. `scale_set` has no history from before it was introduced: All (.*) still matches that history, picking a single scale set does not."
       }
     ]
   },
@@ -70,7 +100,7 @@
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "expr": "sum(gha_busy_runners)",
+          "expr": "sum(gha_busy_runners{name=~\"$scale_set\"})",
           "legendFormat": "busy",
           "refId": "A"
         },
@@ -79,7 +109,7 @@
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "expr": "sum(gha_max_runners)",
+          "expr": "sum(gha_max_runners{name=~\"$scale_set\"})",
           "legendFormat": "max",
           "refId": "B"
         }
@@ -135,7 +165,7 @@
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "expr": "sum(gha_idle_runners)",
+          "expr": "sum(gha_idle_runners{name=~\"$scale_set\"})",
           "legendFormat": "",
           "refId": "A"
         }
@@ -195,7 +225,7 @@
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "expr": "clamp_min(sum(gha_assigned_jobs) - sum(gha_running_jobs), 0)",
+          "expr": "clamp_min(sum(gha_assigned_jobs{name=~\"$scale_set\"}) - sum(gha_running_jobs{name=~\"$scale_set\"}), 0)",
           "legendFormat": "",
           "refId": "A"
         }
@@ -259,7 +289,7 @@
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "expr": "sum(increase(gha_completed_jobs_total[24h])) or vector(0)",
+          "expr": "sum(increase(gha_completed_jobs_total{scale_set=~\"$scale_set\"}[24h])) or vector(0)",
           "legendFormat": "",
           "refId": "A"
         }
@@ -316,7 +346,7 @@
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "expr": "(sum(increase(gha_completed_jobs_total{job_result=~\"(?i)fail.*\"}[24h])) or vector(0)) / sum(increase(gha_completed_jobs_total[24h]))",
+          "expr": "(sum(increase(gha_completed_jobs_total{scale_set=~\"$scale_set\",job_result=~\"(?i)fail.*\"}[24h])) or vector(0)) / sum(increase(gha_completed_jobs_total{scale_set=~\"$scale_set\"}[24h]))",
           "legendFormat": "",
           "refId": "A"
         }
@@ -467,7 +497,7 @@
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "expr": "sum(gha_busy_runners)",
+          "expr": "sum(gha_busy_runners{name=~\"$scale_set\"})",
           "legendFormat": "busy",
           "refId": "A"
         },
@@ -476,7 +506,7 @@
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "expr": "sum(gha_idle_runners)",
+          "expr": "sum(gha_idle_runners{name=~\"$scale_set\"})",
           "legendFormat": "idle",
           "refId": "B"
         },
@@ -485,7 +515,7 @@
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "expr": "sum(gha_desired_runners)",
+          "expr": "sum(gha_desired_runners{name=~\"$scale_set\"})",
           "legendFormat": "desired",
           "refId": "C"
         },
@@ -494,7 +524,7 @@
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "expr": "sum(gha_max_runners)",
+          "expr": "sum(gha_max_runners{name=~\"$scale_set\"})",
           "legendFormat": "max",
           "refId": "D"
         }
@@ -646,7 +676,7 @@
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "expr": "sum by (job_result) (increase(gha_completed_jobs_total[$__interval]))",
+          "expr": "sum by (job_result) (increase(gha_completed_jobs_total{scale_set=~\"$scale_set\"}[$__interval]))",
           "legendFormat": "{{job_result}}",
           "refId": "A"
         }
@@ -748,7 +778,7 @@
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "expr": "round(sum by (repository) (increase(gha_completed_jobs_total[$__range])))",
+          "expr": "round(sum by (repository) (increase(gha_completed_jobs_total{scale_set=~\"$scale_set\"}[$__range])))",
           "legendFormat": "",
           "refId": "A",
           "instant": true,
@@ -760,7 +790,7 @@
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "expr": "round(sum by (repository) (increase(gha_completed_jobs_total{job_result=~\"(?i)fail.*\"}[$__range])))",
+          "expr": "round(sum by (repository) (increase(gha_completed_jobs_total{scale_set=~\"$scale_set\",job_result=~\"(?i)fail.*\"}[$__range])))",
           "legendFormat": "",
           "refId": "B",
           "instant": true,
@@ -772,7 +802,7 @@
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "expr": "histogram_quantile(0.95, sum by (repository, le) (increase(gha_job_execution_duration_seconds_bucket[$__range])))",
+          "expr": "histogram_quantile(0.95, sum by (repository, le) (increase(gha_job_execution_duration_seconds_bucket{scale_set=~\"$scale_set\"}[$__range])))",
           "legendFormat": "",
           "refId": "C",
           "instant": true,
@@ -907,7 +937,7 @@
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "expr": "histogram_quantile(0.5, sum by (le) (increase(gha_job_startup_duration_seconds_bucket[1h])))",
+          "expr": "histogram_quantile(0.5, sum by (le) (increase(gha_job_startup_duration_seconds_bucket{scale_set=~\"$scale_set\"}[1h])))",
           "legendFormat": "p50",
           "refId": "A"
         },
@@ -916,7 +946,7 @@
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "expr": "histogram_quantile(0.95, sum by (le) (increase(gha_job_startup_duration_seconds_bucket[1h])))",
+          "expr": "histogram_quantile(0.95, sum by (le) (increase(gha_job_startup_duration_seconds_bucket{scale_set=~\"$scale_set\"}[1h])))",
           "legendFormat": "p95",
           "refId": "B"
         }
@@ -1003,7 +1033,7 @@
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "expr": "histogram_quantile(0.5, sum by (le) (increase(gha_job_execution_duration_seconds_bucket[1h])))",
+          "expr": "histogram_quantile(0.5, sum by (le) (increase(gha_job_execution_duration_seconds_bucket{scale_set=~\"$scale_set\"}[1h])))",
           "legendFormat": "p50",
           "refId": "A"
         },
@@ -1012,7 +1042,7 @@
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "expr": "histogram_quantile(0.95, sum by (le) (increase(gha_job_execution_duration_seconds_bucket[1h])))",
+          "expr": "histogram_quantile(0.95, sum by (le) (increase(gha_job_execution_duration_seconds_bucket{scale_set=~\"$scale_set\"}[1h])))",
           "legendFormat": "p95",
           "refId": "B"
         }
@@ -1099,7 +1129,7 @@
         "type": "prometheus",
         "uid": "${datasource}"
       },
-      "description": "Working set per runner container. The runner container was OOM-killed at its old 1Gi limit by the Copilot agent.",
+      "description": "Working set per runner container. The runner container was OOM-killed at its old 1Gi limit by the Copilot agent. ARC pods only: not filtered by Scale set.",
       "gridPos": {
         "h": 8,
         "w": 20,
@@ -1217,7 +1247,7 @@
         "type": "prometheus",
         "uid": "${datasource}"
       },
-      "description": "Runner containers seen OOM-killed in the selected range. Ephemeral pods are deleted after their job, so a kill only shows up if it was scraped first.",
+      "description": "Runner containers seen OOM-killed in the selected range. Ephemeral pods are deleted after their job, so a kill only shows up if it was scraped first. ARC pods only: not filtered by Scale set.",
       "gridPos": {
         "h": 8,
         "w": 4,
@@ -1268,6 +1298,787 @@
           "decimals": 0
         },
         "overrides": []
+      }
+    },
+    {
+      "type": "row",
+      "title": "VM runners (kubevirt-scaleset)",
+      "id": 19,
+      "collapsed": false,
+      "panels": [],
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 42
+      }
+    },
+    {
+      "type": "stat",
+      "title": "Scaler",
+      "id": 20,
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "description": "kubevirt-scaleset scaler scrape target. DOWN means no VM runner is being provisioned.",
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 0,
+        "y": 43
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "expr": "max(up{job=\"kubevirt-runners/kubevirt-scaleset\"}) or vector(0)",
+          "legendFormat": "scaler",
+          "refId": "A"
+        }
+      ],
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "background",
+        "graphMode": "none",
+        "textMode": "value_and_name",
+        "justifyMode": "center"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "mappings": [
+            {
+              "type": "value",
+              "options": {
+                "0": {
+                  "text": "DOWN",
+                  "color": "red"
+                },
+                "1": {
+                  "text": "UP",
+                  "color": "green"
+                }
+              }
+            }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "type": "stat",
+      "title": "Scaler restarts (24h)",
+      "id": 21,
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "description": "Container restarts of the scaler pod. Anything above 0 is worth a look at its logs.",
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 4,
+        "y": 43
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "expr": "sum(increase(kube_pod_container_status_restarts_total{namespace=\"kubevirt-runners\",container=\"scaler\"}[24h])) or vector(0)",
+          "legendFormat": "restarts",
+          "refId": "A"
+        }
+      ],
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "background",
+        "graphMode": "none",
+        "textMode": "value_and_name",
+        "justifyMode": "center"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 1
+              }
+            ]
+          },
+          "decimals": 0
+        },
+        "overrides": []
+      }
+    },
+    {
+      "type": "stat",
+      "title": "VM boot p95",
+      "id": 22,
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "description": "95th percentile time from creating a runner VM until its runner took a job (boot plus runner start), over the selected range. First measurements were about 50 s.",
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 8,
+        "y": 43
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "expr": "histogram_quantile(0.95, sum by (le) (increase(kubevirt_scaleset_vm_boot_duration_seconds_bucket[$__range])))",
+          "legendFormat": "p95",
+          "refId": "A"
+        }
+      ],
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "background",
+        "graphMode": "none",
+        "textMode": "value_and_name",
+        "justifyMode": "center"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 120
+              },
+              {
+                "color": "red",
+                "value": 300
+              }
+            ]
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "type": "stat",
+      "title": "VMs reaped (range)",
+      "id": 23,
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "description": "Runner VMs deleted by the reaper over the selected range. A reason's first reap after a scaler restart is not counted: the counter series starts at 1 and increase() ignores that step.",
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 12,
+        "y": 43
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "expr": "sum(increase(kubevirt_scaleset_reaped_vms_total[$__range])) or vector(0)",
+          "legendFormat": "reaped",
+          "refId": "A"
+        }
+      ],
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "background",
+        "graphMode": "none",
+        "textMode": "value_and_name",
+        "justifyMode": "center"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "blue",
+                "value": null
+              }
+            ]
+          },
+          "decimals": 0
+        },
+        "overrides": []
+      }
+    },
+    {
+      "type": "stat",
+      "title": "Errors (range)",
+      "id": 24,
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "description": "Errors the scaler logged and retried, over the selected range. An operation's first error after a scaler restart is not counted: the counter series starts at 1 and increase() ignores that step.",
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 16,
+        "y": 43
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "expr": "sum(increase(kubevirt_scaleset_errors_total[$__range])) or vector(0)",
+          "legendFormat": "errors",
+          "refId": "A"
+        }
+      ],
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "background",
+        "graphMode": "none",
+        "textMode": "value_and_name",
+        "justifyMode": "center"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 1
+              }
+            ]
+          },
+          "decimals": 0
+        },
+        "overrides": []
+      }
+    },
+    {
+      "type": "stat",
+      "title": "Registered vs min",
+      "id": 25,
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "description": "Runners registered with GitHub against the scale set's minRunners (0 for homelab-runners-vm). Registered below min for long means a runner never came online.",
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 20,
+        "y": 43
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "expr": "sum(gha_registered_runners{name=\"homelab-runners-vm\"})",
+          "legendFormat": "registered",
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "expr": "sum(gha_min_runners{name=\"homelab-runners-vm\"})",
+          "legendFormat": "min",
+          "refId": "B"
+        }
+      ],
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "background",
+        "graphMode": "none",
+        "textMode": "value_and_name",
+        "justifyMode": "center"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "blue",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "type": "timeseries",
+      "title": "VMs by phase",
+      "id": 26,
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "description": "Runner VMIs by phase as the reaper last saw them. Empty while no VM exists.",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 47
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "expr": "sum by (phase) (kubevirt_scaleset_vms)",
+          "legendFormat": "{{phase}}",
+          "refId": "A"
+        }
+      ],
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "min": 0,
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 2,
+            "fillOpacity": 10,
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "mode": "none",
+              "group": "A"
+            }
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "type": "timeseries",
+      "title": "VM boot time p50 / p95",
+      "id": 27,
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "description": "Time from creating a runner VM until its runner took a job. Histogram buckets are 10 s to 20 min; a 1h window smooths the few samples.",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 47
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "expr": "histogram_quantile(0.5, sum by (le) (increase(kubevirt_scaleset_vm_boot_duration_seconds_bucket[1h])))",
+          "legendFormat": "p50",
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "expr": "histogram_quantile(0.95, sum by (le) (increase(kubevirt_scaleset_vm_boot_duration_seconds_bucket[1h])))",
+          "legendFormat": "p95",
+          "refId": "B"
+        }
+      ],
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "min": 0,
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 2,
+            "fillOpacity": 10,
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "mode": "none",
+              "group": "A"
+            }
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "type": "timeseries",
+      "title": "Reaped VMs by reason",
+      "id": 28,
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "description": "finished = job done, VM deleted. idle = no job arrived and the VM timed out.",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 55
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "expr": "sum by (reason) (increase(kubevirt_scaleset_reaped_vms_total[$__interval]))",
+          "legendFormat": "{{reason}}",
+          "refId": "A"
+        }
+      ],
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "min": 0,
+          "custom": {
+            "drawStyle": "bars",
+            "lineWidth": 2,
+            "fillOpacity": 60,
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "mode": "normal",
+              "group": "A"
+            }
+          }
+        },
+        "overrides": []
+      },
+      "interval": "1m"
+    },
+    {
+      "type": "timeseries",
+      "title": "Retried errors by operation",
+      "id": 29,
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "description": "Errors the scaler logged and retried later. Should be flat at zero.",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 55
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "expr": "sum by (operation) (increase(kubevirt_scaleset_errors_total[$__interval]))",
+          "legendFormat": "{{operation}}",
+          "refId": "A"
+        }
+      ],
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "min": 0,
+          "custom": {
+            "drawStyle": "bars",
+            "lineWidth": 2,
+            "fillOpacity": 60,
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "mode": "normal",
+              "group": "A"
+            }
+          }
+        },
+        "overrides": []
+      },
+      "interval": "1m"
+    },
+    {
+      "type": "timeseries",
+      "title": "kubevirt01 CPU",
+      "id": 30,
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "description": "CPU use of the node that hosts the runner VMs (nested KVM).",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 63
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "expr": "1 - avg(rate(node_cpu_seconds_total{mode=\"idle\"}[$__rate_interval]) * on(instance) group_left() node_uname_info{nodename=\"kubevirt01\"})",
+          "legendFormat": "cpu used",
+          "refId": "A"
+        }
+      ],
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "min": 0,
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 2,
+            "fillOpacity": 10,
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "mode": "none",
+              "group": "A"
+            }
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "type": "timeseries",
+      "title": "kubevirt01 memory",
+      "id": 31,
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "description": "Memory of the node that hosts the runner VMs and the homelab-runners-kvm pod. Used = total minus available.",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 63
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "expr": "node_memory_MemTotal_bytes * on(instance) group_left() node_uname_info{nodename=\"kubevirt01\"}",
+          "legendFormat": "total",
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "expr": "(node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes) * on(instance) group_left() node_uname_info{nodename=\"kubevirt01\"}",
+          "legendFormat": "used",
+          "refId": "B"
+        }
+      ],
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bytes",
+          "min": 0,
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 2,
+            "fillOpacity": 10,
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "mode": "none",
+              "group": "A"
+            }
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "total"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "red"
+                }
+              },
+              {
+                "id": "custom.lineStyle",
+                "value": {
+                  "fill": "dash",
+                  "dash": [
+                    10,
+                    10
+                  ]
+                }
+              },
+              {
+                "id": "custom.fillOpacity",
+                "value": 0
+              }
+            ]
+          }
+        ]
       }
     }
   ]
