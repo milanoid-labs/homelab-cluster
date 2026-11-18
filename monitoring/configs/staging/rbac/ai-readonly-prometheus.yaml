@@ -1,0 +1,30 @@
+---
+# Lets the ai-readonly ServiceAccount (infrastructure/controllers/base/ai-readonly) run
+# PromQL against Prometheus through the API-server service proxy:
+#   kubectl get --raw "/api/v1/namespaces/monitoring/services/kube-prometheus-stack-prometheus:9090/proxy/api/v1/query?query=up"
+#
+# Kept out of the ClusterRole on purpose (it forbids */proxy). This is the narrow
+# exception: GET only, one named service:port, in this namespace. GET can't reach the
+# POST/PUT admin API. pods/portforward stays forbidden: it reaches any port in a pod.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: ai-readonly-prometheus-query
+rules:
+  - apiGroups: [""]
+    resources: [services/proxy]
+    resourceNames: ["kube-prometheus-stack-prometheus:9090"]
+    verbs: [get]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: ai-readonly-prometheus-query
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: ai-readonly-prometheus-query
+subjects:
+  - kind: ServiceAccount
+    name: ai-readonly
+    namespace: ai-readonly
