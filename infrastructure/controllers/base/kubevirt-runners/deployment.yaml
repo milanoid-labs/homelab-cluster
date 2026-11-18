@@ -19,6 +19,9 @@ spec:
     metadata:
       labels:
         app.kubernetes.io/name: kubevirt-scaleset
+        # The scale set's name, defined once: SCALE_SET_NAME below reads it from here and
+        # the PodMonitor turns it into the `scale_set` target label of the dashboard filter.
+        homelab.milanoid.net/scale-set: homelab-runners-vm
     spec:
       serviceAccountName: kubevirt-scaleset
       # Runs on the hpminis: kubevirt01's taint keeps it for the runner VMs.
@@ -33,7 +36,9 @@ spec:
           image: ghcr.io/milanoid-labs/kubevirt-scaleset:20261117-b2c4c53@sha256:2d0dbbed3a3a48f5e558f5db6be80786496999b72fc52661beaeb2db4265f1af
           env:
             - name: SCALE_SET_NAME
-              value: homelab-runners-vm
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.labels['homelab.milanoid.net/scale-set']
             - name: MIN_RUNNERS
               value: "0"
             # kubevirt01 has 12 GB: 2 VMs x (4Gi + ~270Mi virt-launcher overhead).

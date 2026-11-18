@@ -57,7 +57,8 @@
         },
         "refresh": 2,
         "sort": 1,
-        "hide": 0
+        "hide": 0,
+        "description": "Gauge panels filter by the gha_* `name` label, job panels by the `scale_set` target label the PodMonitors add. `scale_set` has no history from before it was introduced: All (.*) still matches that history, picking a single scale set does not."
       }
     ]
   },
@@ -1128,7 +1129,7 @@
         "type": "prometheus",
         "uid": "${datasource}"
       },
-      "description": "Working set per runner container. The runner container was OOM-killed at its old 1Gi limit by the Copilot agent.",
+      "description": "Working set per runner container. The runner container was OOM-killed at its old 1Gi limit by the Copilot agent. ARC pods only: not filtered by Scale set.",
       "gridPos": {
         "h": 8,
         "w": 20,
@@ -1246,7 +1247,7 @@
         "type": "prometheus",
         "uid": "${datasource}"
       },
-      "description": "Runner containers seen OOM-killed in the selected range. Ephemeral pods are deleted after their job, so a kill only shows up if it was scraped first.",
+      "description": "Runner containers seen OOM-killed in the selected range. Ephemeral pods are deleted after their job, so a kill only shows up if it was scraped first. ARC pods only: not filtered by Scale set.",
       "gridPos": {
         "h": 8,
         "w": 4,
@@ -1441,7 +1442,8 @@
                 "value": 1
               }
             ]
-          }
+          },
+          "decimals": 0
         },
         "overrides": []
       }
@@ -1454,7 +1456,7 @@
         "type": "prometheus",
         "uid": "${datasource}"
       },
-      "description": "95th percentile time from VM creation until its runner came online, over the selected range. First measurements were about 50 s.",
+      "description": "95th percentile time from creating a runner VM until its runner took a job (boot plus runner start), over the selected range. First measurements were about 50 s.",
       "gridPos": {
         "h": 4,
         "w": 4,
@@ -1518,7 +1520,7 @@
         "type": "prometheus",
         "uid": "${datasource}"
       },
-      "description": "Runner VMs deleted by the reaper over the selected range.",
+      "description": "Runner VMs deleted by the reaper over the selected range. A reason's first reap after a scaler restart is not counted: the counter series starts at 1 and increase() ignores that step.",
       "gridPos": {
         "h": 4,
         "w": 4,
@@ -1561,7 +1563,8 @@
                 "value": null
               }
             ]
-          }
+          },
+          "decimals": 0
         },
         "overrides": []
       }
@@ -1574,7 +1577,7 @@
         "type": "prometheus",
         "uid": "${datasource}"
       },
-      "description": "Errors the scaler logged and retried, over the selected range.",
+      "description": "Errors the scaler logged and retried, over the selected range. An operation's first error after a scaler restart is not counted: the counter series starts at 1 and increase() ignores that step.",
       "gridPos": {
         "h": 4,
         "w": 4,
@@ -1621,7 +1624,8 @@
                 "value": 1
               }
             ]
-          }
+          },
+          "decimals": 0
         },
         "overrides": []
       }
@@ -1634,7 +1638,7 @@
         "type": "prometheus",
         "uid": "${datasource}"
       },
-      "description": "Runners registered with GitHub against the scale set's minRunners. Below min for long means a VM never came online.",
+      "description": "Runners registered with GitHub against the scale set's minRunners (0 for homelab-runners-vm). Registered below min for long means a runner never came online.",
       "gridPos": {
         "h": 4,
         "w": 4,
@@ -1650,6 +1654,15 @@
           "expr": "sum(gha_registered_runners{name=\"homelab-runners-vm\"})",
           "legendFormat": "registered",
           "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "expr": "sum(gha_min_runners{name=\"homelab-runners-vm\"})",
+          "legendFormat": "min",
+          "refId": "B"
         }
       ],
       "options": {
@@ -1746,7 +1759,7 @@
         "type": "prometheus",
         "uid": "${datasource}"
       },
-      "description": "Time until a new VM's runner is online. Histogram buckets are 10 s to 20 min; a 1h window smooths the few samples.",
+      "description": "Time from creating a runner VM until its runner took a job. Histogram buckets are 10 s to 20 min; a 1h window smooths the few samples.",
       "gridPos": {
         "h": 8,
         "w": 12,
@@ -1857,7 +1870,8 @@
           }
         },
         "overrides": []
-      }
+      },
+      "interval": "1m"
     },
     {
       "type": "timeseries",
@@ -1913,7 +1927,8 @@
           }
         },
         "overrides": []
-      }
+      },
+      "interval": "1m"
     },
     {
       "type": "timeseries",
@@ -1923,7 +1938,7 @@
         "type": "prometheus",
         "uid": "${datasource}"
       },
-      "description": "CPU use of the node that hosts the runner VMs (4 vCPU, nested KVM).",
+      "description": "CPU use of the node that hosts the runner VMs (nested KVM).",
       "gridPos": {
         "h": 8,
         "w": 12,
@@ -1979,7 +1994,7 @@
         "type": "prometheus",
         "uid": "${datasource}"
       },
-      "description": "12 GB node for 2 x 4Gi VMs. Used = total minus available.",
+      "description": "Memory of the node that hosts the runner VMs and the homelab-runners-kvm pod. Used = total minus available.",
       "gridPos": {
         "h": 8,
         "w": 12,

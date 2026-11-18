@@ -16,7 +16,8 @@ spec:
       path: /metrics
       interval: 30s
       # Same `scale_set` label the arc-listener PodMonitor adds, so one dashboard
-      # variable covers both pools.
+      # variable covers both pools. Taken from the pod label the scaler also reads its
+      # SCALE_SET_NAME from, so it can't drift from the `name` label of its metrics.
       relabelings:
-        - targetLabel: scale_set
-          replacement: homelab-runners-vm
+        - sourceLabels: [__meta_kubernetes_pod_label_homelab_milanoid_net_scale_set]
+          targetLabel: scale_set
