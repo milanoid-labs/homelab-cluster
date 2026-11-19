@@ -1,15 +1,15 @@
 ---
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
-# KubeVirt v1.9.1. Officially supports k8s 1.34-1.36; the cluster runs 1.37 (accepted,
-# smoke-tested). Move to 1.10+ once it lists 1.37.
+# KubeVirt v1.10.0. Built against k8s 1.36 libraries; the cluster runs 1.37, beyond what
+# upstream lists (accepted, smoke-tested on v1.9.1; re-check after upgrading).
 resources:
   - kubevirt-operator.yaml
   - kubevirt-cr.yaml
 images:
   - name: quay.io/kubevirt/virt-operator
-    newTag: v1.9.1
-    digest: sha256:a8adf7b772e9ce0bf7e2ce889910fc41ebadf552c9dbe843e9b86641e34f5df9
+    newTag: v1.10.0
+    digest: sha256:37c1287ad094eed25c4c6cc78744c06dd9bf340f7301eb0d26bdf3c4c230b738
 patches:
   # virt-operator deploys the other components itself and derives their images from
   # VIRT_OPERATOR_IMAGE (a plain env string, which the images: transformer above doesn't
@@ -29,11 +29,11 @@ patches:
               - name: virt-operator
                 env:
                   # Digest only, no tag: the operator parses this string, and with a tag@digest form
-                  # it would derive "v1.9.1@sha256:<operator digest>" as the tag for components not
+                  # it would derive "v1.10.0@sha256:<operator digest>" as the tag for components not
                   # pinned below (export proxy, sidecar shim, ...). Digest-only makes it fall back
                   # to KUBEVIRT_VERSION. The component images below are used verbatim.
                   - name: VIRT_OPERATOR_IMAGE
-                    value: quay.io/kubevirt/virt-operator@sha256:a8adf7b772e9ce0bf7e2ce889910fc41ebadf552c9dbe843e9b86641e34f5df9
+                    value: quay.io/kubevirt/virt-operator@sha256:37c1287ad094eed25c4c6cc78744c06dd9bf340f7301eb0d26bdf3c4c230b738
                   - name: VIRT_API_IMAGE
                     value: quay.io/kubevirt/virt-api:v1.10.0@sha256:876171a8625f7f20c337aba14d4ee4275923d612674c776fa25db5bf75901d5b
                   - name: VIRT_CONTROLLER_IMAGE
@@ -54,9 +54,9 @@ patches:
                   # images, so stay on its minor. renovate.json5 caps it; move the cap with the
                   # operator.
                   - name: VIRT_TEMPLATE_APISERVER_IMAGE
-                    value: quay.io/kubevirt/virt-template-apiserver:v0.2.4@sha256:ed201f0612a95809f1490e4d3acafd779589638428ea784ad94498a0ffb1a133
+                    value: quay.io/kubevirt/virt-template-apiserver:v0.3.0@sha256:eaf118b2c1645c197f351c4aa0b56e49ace5c438530803b3ebcf390dc7b43731
                   - name: VIRT_TEMPLATE_CONTROLLER_IMAGE
-                    value: quay.io/kubevirt/virt-template-controller:v0.2.4@sha256:fd5f2a73043109104ec171bdbe7567815dc0211d7427c0f4ef28b7c3688c0ecb
+                    value: quay.io/kubevirt/virt-template-controller:v0.3.0@sha256:5313fe9a7364881a8afd9ac3afb764fa7d009e098f4180417ed3708c5bdf2efc
   # virt-operator isn't placed by the CR (it isn't created by itself), so mirror
   # spec.infra.nodePlacement here: one replica on an ordinary worker, off the busy single
   # control plane that upstream's default requires.

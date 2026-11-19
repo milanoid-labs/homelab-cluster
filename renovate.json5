@@ -245,7 +245,7 @@
       // cap Renovate proposed v0.3.0 for the v1.9.1 operator (#692) and skipped v0.2.4.
       // Raise it together with the operator's minor.
       matchPackageNames: ['quay.io/kubevirt/virt-template-*'],
-      allowedVersions: '<0.3.0',
+      allowedVersions: '<0.4.0',
       groupName: 'virt-template',
       sourceUrl: 'https://github.com/kubevirt/virt-template',
       automerge: false,
