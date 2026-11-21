@@ -1,6 +1,6 @@
 FROM ghcr.io/actions/actions-runner:2.338.2@sha256:6d0b2d80d80f143f77dcb676e50920100bbb547e39e883454d57f45ab8c31300
 
-ARG GH_VERSION=2.104.0
+ARG GH_VERSION=2.105.0
 
 # apt resolves against snapshot.ubuntu.com (and the PPA's snapshot) as of this
 # timestamp, so dirmngr and every dependency it pulls in are fixed. dirmngr must
