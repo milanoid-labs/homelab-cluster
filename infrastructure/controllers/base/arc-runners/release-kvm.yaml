@@ -51,14 +51,14 @@ spec:
             effect: NoSchedule
         initContainers:
           - name: init-dind-externals
-            image: ghcr.io/milanoid-labs/homelab-runner:20261116@sha256:95578068b85290216089e596bea56cec3e4ad41c525e7166297ffd6b9d90e3b2
+            image: ghcr.io/milanoid-labs/homelab-runner:20261121@sha256:73fcf43a7ce80eaf37b5bf08201f0739c27d00d13ba6d334a0b6911198ed211e
             command: ["cp", "-r", "-v", "/home/runner/externals/.", "/home/runner/tmpDir/"]
             volumeMounts:
               - name: dind-externals
                 mountPath: /home/runner/tmpDir
         containers:
           - name: runner
-            image: ghcr.io/milanoid-labs/homelab-runner:20261116@sha256:95578068b85290216089e596bea56cec3e4ad41c525e7166297ffd6b9d90e3b2
+            image: ghcr.io/milanoid-labs/homelab-runner:20261121@sha256:73fcf43a7ce80eaf37b5bf08201f0739c27d00d13ba6d334a0b6911198ed211e
             command: ["/home/runner/run.sh"]
             env:
               - name: DOCKER_HOST
