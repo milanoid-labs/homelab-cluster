@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: prowlarr
-          image: ghcr.io/hotio/prowlarr:release-3.0.2.5780@sha256:275c075cf2eb31d97fb1dec650872be0fd0deedd3fd32dd1dc2ee526f53d9225
+          image: ghcr.io/hotio/prowlarr:release-3.1.0.5799@sha256:b8c4198fd43d5aee9db3363c26bb942968d6e488ae43b20770d60ca691ab3b6c
           envFrom:
             - configMapRef:
                 name: prowlarr-configmap
