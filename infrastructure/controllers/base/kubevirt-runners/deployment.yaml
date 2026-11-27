@@ -33,7 +33,7 @@ spec:
           type: RuntimeDefault
       containers:
         - name: scaler
-          image: ghcr.io/milanoid-labs/kubevirt-scaleset:20261125-9d1d8c8@sha256:2c35c04223b824838fc04474dbe855d47af133075959ad4aa8c52b83926a2e66
+          image: ghcr.io/milanoid-labs/kubevirt-scaleset:20261126-2a4200c@sha256:bc4813a82a751b590f032ad1c32de3f98410c8a539b11ca585e1e2e2bf20d7e2
           env:
             - name: SCALE_SET_NAME
               valueFrom:
